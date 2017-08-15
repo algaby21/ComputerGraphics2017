@@ -1,108 +1,62 @@
-/*********************************************************
-Materia: Gráficas Computacionales
-Fecha: 13 de agosto del 2017
-Autor: A01169073 Aldo A. Reyna Gómez
-*********************************************************/
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 
+void GameLoop() {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-#include <iostream>
-using namespace std;
+	// WARNING!!!!!! ESTO ES OPENGL VIEJITO!!!!!!
 
-int PerimetroRectangulo(int base, int altura) {
-	return(base * 2 + altura * 2);
+	glBegin(GL_TRIANGLES);
+	
+	//-1 para borde izquierdo, 1 para borde derecho, 0 centro, 1 arriba, -1 abajo
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glVertex2f(-1.0f, -1.0f); // SOlo dos coordenadas, x y y , dos puntos o z para 3D pero este no tiene profundidad
+
+	glColor3f(0.0f, 1.0f, 0.0f);
+	glVertex2d(1.0f, -1.0f);
+
+	glColor3f(0.0f, 0.0f, 1.0f);
+	glVertex2d(0.0f, 1.0f);
+
+	glEnd();
+
+	glutSwapBuffers();
 }
 
-float AreaTriangulo(float base, float altura) {
-	return (base*altura / 2);
-}
+int main_1(int argc, char* argv[]) {
+	// Inicializar freeglut
+	// Freeglut se encargfa de crear una ventana en donde podemos dibujar Gráficas Computacionales
+	glutInit(&argc, argv);
+	
+	// Iniciar el contexto de OpenGL, se refiere a las capacidades de la aplicación gráfica
+	// En este caso se trabaja con el pipeline clásico
+	glutInitContextProfile(GLUT_COMPATIBILITY_PROFILE);
+	
+	// Freeglut nos permite configurar eventos que ocurren en la ventana
+	// Un evento que interesa es cuando alguien cierra la centana
+	// En este caso, se deja de renderear la escena y se termina el programa
+	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 
-int Mayor(int numero1, int numero2, int numero3) {
-	int mayor = numero1;
-	(numero2 > numero1 ? mayor = numero2 : (numero3 > numero1 ? mayor = numero3 : 0));
-	(numero3 > numero2 ? mayor = numero3 : 0);
-	return mayor;
-}
+	// También configuramos frambuffer, en este caso solicitamos un buffer
+	// true color RGBA, un buffer de produndidad y un segundo buffer para renderear
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE); // Dos framebuffers
 
-int Menor(int numero1, int numero2, int numero3) {
-	int menor = numero1;
-	(numero2 < numero1 ? menor = numero2 : (numero3 < numero1 ? menor = numero3 : 0));
-	(numero3 < numero2 ? menor = numero3 : 0);
-	return menor;
-}
+	// Iniciar las dimensiones de la ventana (en pixeles)
+	glutInitWindowSize(400, 400);
 
-void FilaEstrellas(int n) {
-	for (int i = 0; i < n; i++) {
-		cout << '*';
-	}
-	cout << endl;
-}
+	// Creeamos la ventana y le damos un título.
+	glutCreateWindow("Título Genial GL");
 
-void MatrizEstrellas(int n) {
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < n; j++)
-			cout << '*';
-		cout << endl;
-	}
-}
+	glutDisplayFunc(GameLoop);
 
-void PiramideEstrellas(int n) {
-	for (int i = 1; i <= n; i++) {
-		for (int j = 1; j <= i; j++)
-			cout << '*';
-		cout << endl;
-	}
-}
+	// Inicializamos GLEW. Esta librería se encarga de obtener el API de OpenGL de nuestra tarjeta de video
+	glewInit();
 
-void FlechaEstrellas(int n) {
-	PiramideEstrellas(n);
-	for (int i = n - 1; i > 0; i--) {
-		for (int j = 1; j <= i; j++)
-			cout << '*';
-		cout << endl;
-	}
-}
+	// Configurar OpenGl. Este es el color por dedault del buffer de color en el framebuffer.
+	glClearColor(1.0f, 1.0f, 0.5f, 1.0f);
 
-void Fibonacci(int n) {
-	int a = 0, b = 1, c;
-	cout << b << ' ';
-	for (int i = 1; i < n; i++) {
-		cout << (c = a + b) << ' ';
-		a = b;
-		b = c;
-	}
-	cout << endl;
-}
+	// Iniciar la aplicación. El Main se pausará en esta línea hasta que se cierre la ventana.
+	glutMainLoop();
 
-bool EsPrimo(int numero) {
-	for (int i = 2; i < sqrt(numero); i++) {
-		if (numero%i == 0) return false;
-	}
-	return true;
-}
-
-int main() {
-	int p = PerimetroRectangulo(5, 3);
-	float a = AreaTriangulo(5.0f, 3.0f);
-	int mayor = Mayor(5, 9, 1);
-	int menor = Menor(5, 9, 1);
-
-	cout << p << endl;
-	cout << a << endl;
-	cout << mayor << endl;
-	cout << menor << endl;
-
-	FilaEstrellas(5);
-	MatrizEstrellas(4);
-	PiramideEstrellas(6);
-	FlechaEstrellas(6);
-	Fibonacci(9);
-	bool primo = EsPrimo(79);
-	cout << primo << endl;
-	primo = EsPrimo(52);
-	cout << primo << endl;
-	cin.get();
 	return 0;
 }
-
-//Fuente consultada: Tutorials Point. (2017, julio 23). C++ Tutorial. 
-//		Retrieved from https://www.tutorialspoint.com/cplusplus/index.htm
