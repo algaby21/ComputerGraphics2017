@@ -1,3 +1,9 @@
+/*********************************************************
+Materia: Gráficas Computacionales
+Fecha: 18 de agosto del 2017
+Autor: A01169073 Aldo A. Reyna Gómez
+*********************************************************/
+
 #include "Circle.h" //Si es un archivo fuente que ya existe, se usa "", si es librería que se vincula de otro lado, se usa <>
 
 Circle::Circle() { // De la case Circle, voy a implementar el constructor Circle

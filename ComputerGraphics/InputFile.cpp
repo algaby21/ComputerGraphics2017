@@ -1,3 +1,9 @@
+/*********************************************************
+Materia: Gráficas Computacionales
+Fecha: 18 de agosto del 2017
+Autor: A01169073 Aldo A. Reyna Gómez
+*********************************************************/
+
 #include "InputFile.h"
 #include <fstream>
 #include <sstream>
