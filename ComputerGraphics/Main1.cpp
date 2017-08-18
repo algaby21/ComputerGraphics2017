@@ -9,6 +9,8 @@ Autor: A01169073 Aldo A. Reyna Gómez
 #include "Circle.h"
 #include "Rectangle.h"
 #include "Employee.h"
+#include "InputFile.h"
+
 using namespace std;
 
 int PerimetroRectangulo(int base, int altura) {
@@ -104,7 +106,7 @@ int main() {
 	bool primo = EsPrimo(79);
 	cout << primo << endl;
 	primo = EsPrimo(52);
-	cout << primo << endl;*/
+	cout << primo << endl;
 
 	Circle circulo(2, "green");
 	cout << circulo.GetRadius() << endl;
@@ -119,7 +121,13 @@ int main() {
 	cout << empleado.Print() << endl;
 	empleado.SetSalary(empleado.RaiseSalary(20));
 	cout << "El nuevo salario después de un 20% extra es: " << empleado.GetSalary() << endl;
+	*/
 
+	string filename = "Prueba.txt";
+	InputFile myFile;
+	myFile.Read(filename);
+	string contents = myFile.GetContents();
+	cout << "Contents: " << contents << endl;
 	cin.get();
 	return 0;
 }

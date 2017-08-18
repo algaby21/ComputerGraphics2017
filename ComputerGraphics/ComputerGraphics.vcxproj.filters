@@ -30,6 +30,9 @@
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="InputFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Circle.h">
@@ -41,5 +44,11 @@
     <ClInclude Include="Employee.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="InputFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Prueba.txt" />
   </ItemGroup>
 </Project>
