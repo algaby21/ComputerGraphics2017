@@ -85,7 +85,7 @@ bool EsPrimo(int numero) {
 	return true;
 }
 
-int main() {
+int main1() {
 	/*int first;
 	cin >> first;
 	int p = PerimetroRectangulo(first, 3);
