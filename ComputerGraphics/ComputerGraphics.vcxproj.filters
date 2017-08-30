@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Shaders">
+      <UniqueIdentifier>{a46788bd-5fc7-4c54-96f0-9576cd7d49be}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Circle.cpp">
@@ -50,5 +53,13 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="Prueba.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Default.vert">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Default.frag">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
