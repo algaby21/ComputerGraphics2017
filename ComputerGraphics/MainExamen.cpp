@@ -8,7 +8,7 @@ Autor: A01169073 Aldo A. Reyna Gómez
 #include <GL/freeglut.h>
 #include <iostream>
 #include <vector>
-#include "InputFile.h"
+#include "InputFile1.h"
 #include <glm/glm.hpp>
 
 using namespace std;
@@ -20,19 +20,44 @@ GLuint vao;
 // Identificador del manager de los shaders (shaderProgramme)
 GLuint shaderProgram;
 
+float vertsPerFrame = 0.0f;
+float delta = 0.05f;
+
 void Initialise() {
-
-	float arr[6] = { 18.f, 306.f, 234.f, 162.f, 90.f, 18.f };
+	// Creando toda la memoria una sola vez al inicio de vida de mi programa
+	// Vector de C++ es una lista de elementos, vector de glm es una matriz con muchos componentes
+	// Lista de vec2
+	// Claramente estamos trabajando en el CPU y RAM
 	vector<vec2> positions;
-	vector<vec3> colors;
-
-	for (int i = 0; i < 6; i++) {
-		positions.push_back(vec2(cos(radians(arr[i])), sin(radians(arr[i]))));
-		colors.push_back(vec3(0.0f, 0.0f, 1.0f));
-		positions.push_back(vec2(0.5*cos(radians(arr[i])), 0.5*sin(radians(arr[i]))));
-		colors.push_back(vec3(1.0f, 0.0f, 0.0f));
+	int r = 1;
+	float x = r*cos(radians(1.f));
+	float y = r*sin(radians(1.f));
+	float i;
+	for (i = 1.f; i <= 361.f; i++) {
+		positions.push_back(vec2(0, 0));
+		positions.push_back(vec2(x, y));
+		x = r*cos(radians(i));
+		y = r*sin(radians(i));
+		positions.push_back(vec2(x, y));
 	}
-	
+
+	/*positions.push_back(vec2(1, 1));
+	positions.push_back(vec2(-1, -1));
+	positions.push_back(vec2(-1, 1));*/
+
+	vector<vec3> colors;
+	// Tantos colores por número de vertices tengas, si un vértice tiene un atributo, todos deben tenerlo
+	// Arreglo de colors en el CPU
+	float red, g, b;
+	for (i = 1; i <= 361; i++) {
+		colors.push_back(vec3(1.0f, 1.0f, 1.0f));
+		colors.push_back(vec3(cos(radians(i)), sin(radians(i)), sin(radians(i / 360))));
+		colors.push_back(vec3(cos(radians(i)), sin(radians(i)), sin(radians(i / 360))));
+
+	}
+
+	//colors.push_back(vec3(1.0f, 0.0f, 1.0f));
+
 	// Queremos gengerar 1 manager
 	glGenVertexArrays(1, &vao);
 	// Utilizar el vao
@@ -71,7 +96,8 @@ void Initialise() {
 
 	// VERTEX SHADER
 	// Leemos el archivo Default.vert donde está el código del vertex shader.
-	myfile.Read("Default.vert");
+	//myfile.Read("Default.vert");
+	myfile.Read("DiscardCenter.vert");
 	// Obtenemos el código fuente y lo guardamos en un string
 	string vertexSource = myfile.GetContents();
 	// Creamos un shader de tipo vertex guardamos su identificador en una variable
@@ -86,7 +112,8 @@ void Initialise() {
 	// Vamos a asumir que no hay ningún error.
 	glCompileShader(vertexShaderHandle);
 
-	myfile.Read("Default.frag");
+	//myfile.Read("Default.frag");
+	myfile.Read("DiscardCenter.frag");
 	string fragmentSource = myfile.GetContents();
 	GLuint fragmentShaderHandle =
 		glCreateShader(GL_FRAGMENT_SHADER);
@@ -139,12 +166,17 @@ void GameLoop() {
 	// Activamos el manager y en este momento se activan todos los VBOs asociados automáticamente
 	glBindVertexArray(vao);
 	// Función de dibujado SIN índices a partir de qué vértice y cuántos más se dibujarán
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 12);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, clamp(3 * vertsPerFrame, 0.0f, 3 * 361.0f));
 	// Terminamos de utilizar el manager
 	glBindVertexArray(0);
 
 	// Desactivamos el manager
 	glUseProgram(0);
+
+	vertsPerFrame += delta;
+	if (vertsPerFrame < 0.0f || vertsPerFrame >= 380.0f) {
+		delta *= -1.0f;
+	}
 
 	//Cuando terminamos de renderear, cambiamos los buffers
 	glutSwapBuffers();
@@ -156,7 +188,16 @@ void Idle() {
 	glutPostRedisplay();
 }
 
-int main(int argc, char* argv[]) {
+void ReshapeWindow(int width, int height) {
+	// Para configurar un uniform, tenemos que decirle a OpenGL que vamos a utilizar el shader program (manager)
+	glViewport(0, 0, width, height);
+	glUseProgram(shaderProgram);
+	GLint uniformLocation = glGetUniformLocation(shaderProgram, "Resolution");
+	glUniform2f(uniformLocation, width, height);
+	glUseProgram(0);
+}
+
+int mainExamen(int argc, char* argv[]) {
 	// Inicializar freeglut
 	// Freeglut se encargfa de crear una ventana en donde podemos dibujar Gráficas Computacionales
 	glutInit(&argc, argv);
@@ -185,6 +226,7 @@ int main(int argc, char* argv[]) {
 	glutDisplayFunc(GameLoop);
 	// Asociamos una función para el cambio de la resolución de la ventana
 	// FreeGlut la va a mandar a llamar cuando alguien cambie el tamaño de la ventana
+	glutReshapeFunc(ReshapeWindow);
 	// Cuanso OpenGL entre en modo de reposo
 	glutIdleFunc(Idle);
 
