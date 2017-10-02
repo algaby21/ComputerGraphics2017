@@ -1,6 +1,6 @@
 /*********************************************************
 Materia: Gráficas Computacionales
-Fecha: 18 de agosto del 2017
+Fecha: 16 de septiembre del 2017
 Autor: A01169073 Aldo A. Reyna Gómez
 *********************************************************/
 
@@ -8,38 +8,53 @@ Autor: A01169073 Aldo A. Reyna Gómez
 #include <GL/freeglut.h>
 #include <iostream>
 #include <vector>
-#include "InputFile.h"
 #include <glm/glm.hpp>
+#include "InputFile.h"
+#include "Mesh.h"
+#include "Shader.h"
+#include "ShaderProgram.h"
 
 using namespace std;
 using namespace glm;
 
-// Identificadoe del manager al que vamos a asociar todos los VOBs que tenga nuestra geometría
+// Identificador del manager al que vamos a asociar todos los VBOs que tenga nuestra geometría
+unique_ptr<Mesh> mesh(new Mesh);
+// Identificador del manager de los shaders (shaderProgram)
+unique_ptr<ShaderProgram> shaderProgram(new ShaderProgram);
+
+// Identificador del manager al que vamos a asociar todos los VBOs que tenga nuestra geometría
 GLuint vao;
 
 // Identificador del manager de los shaders (shaderProgramme)
-GLuint shaderProgram;
+// GLuint shaderProgram;
 
 void Initialise() {
 
-	float arr[6] = { 18.f, 306.f, 234.f, 162.f, 90.f, 18.f };
+	// Inicia un nuevo mesh y crea un manager VAO con 12 vértices
+	mesh->CreateMesh(12);
+	
 	vector<vec2> positions;
 	vector<vec3> colors;
 
+	float arr[6] = { 18.f, 306.f, 234.f, 162.f, 90.f, 18.f };
 	for (int i = 0; i < 6; i++) {
 		positions.push_back(vec2(cos(radians(arr[i])), sin(radians(arr[i]))));
 		colors.push_back(vec3(0.0f, 0.0f, 1.0f));
 		positions.push_back(vec2(0.5*cos(radians(arr[i])), 0.5*sin(radians(arr[i]))));
 		colors.push_back(vec3(1.0f, 0.0f, 0.0f));
 	}
-	
+
+	mesh->SetPositionAttribute(positions, GL_STATIC_DRAW, 0);
+	mesh->SetColorAttribute(colors, GL_STATIC_DRAW, 1);
+
+	/*/
 	// Queremos gengerar 1 manager
 	glGenVertexArrays(1, &vao);
 	// Utilizar el vao
 	// A partir de este momento, todos los VBOs creados y configurados se van a asociar a este manager
 	glBindVertexArray(vao);
 
-	// TIpo de dato de OpenGL entero sin signo multiplataforma
+	// Tipo de dato de OpenGL entero sin signo multiplataforma
 	// Empezamos a crear bufers (identificador de VBO de posiciones)
 	GLuint positionsVBO;
 	// Creación del VBO de posiciones lo guarda en positionsVBO y da un identificador para utilizarlo
@@ -61,11 +76,10 @@ void Initialise() {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3)*colors.size(), colors.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);*/
 
-	// Desactivamos el manager
-	glBindVertexArray(0);
-
+		
+	/*
 	// Creamos un objeto para leer archivos
 	InputFile myfile;
 
@@ -94,8 +108,16 @@ void Initialise() {
 		(const GLchar*)fragmentSource.c_str();
 	// Continuar leyendo hasta que encuentre un nullptr
 	glShaderSource(fragmentShaderHandle, 1, &fragmentSource_c, nullptr);
-	glCompileShader(fragmentShaderHandle);
+	glCompileShader(fragmentShaderHandle);*/
+	
+	shaderProgram->CreateProgram();
+	shaderProgram->AttachShader("Default.vert", GL_VERTEX_SHADER);
+	shaderProgram->AttachShader("Default.frag", GL_FRAGMENT_SHADER);
+	shaderProgram->SetAttribute(0, "VertexPosition");
+	shaderProgram->SetAttribute(1, "VertexColor");
+	shaderProgram->LinkProgram();
 
+	/*
 	// Regresa el identificador de este manager
 	// Creamos el identificador para el manager de los shaders
 	shaderProgram = glCreateProgram();
@@ -108,43 +130,32 @@ void Initialise() {
 	// Asociamos un buffer con índice 1 (colores) a la variable VertexColor
 	glBindAttribLocation(shaderProgram, 1, "VertexColor");
 	// Ejecutamos el proceso de linker (asegurarnos que el vertex y fragment son compatibles)
-	glLinkProgram(shaderProgram);
+	glLinkProgram(shaderProgram);*/
 }
 
 void GameLoop() {
-
-	//Limpiamos el buffer de color y el buffer de profundidad
-	// Siempre hacerlo al inicio del frame
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// Activamos el vertexShader y el fragmentShader utilizando el manager
-	glUseProgram(shaderProgram);
+	shaderProgram->Activate();
+	mesh->Draw(GL_TRIANGLE_STRIP);
+	shaderProgram->Deactivate();
+	
 	/*
-	// WARNING!!!!!! ESTO ES OPENGL VIEJITO!!!!!!
-
-	glBegin(GL_TRIANGLES);
-
-	//-1 para borde izquierdo, 1 para borde derecho, 0 centro, 1 arriba, -1 abajo
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glVertex2f(-1.0f, -1.0f); // SOlo dos coordenadas, x y y , dos puntos o z para 3D pero este no tiene profundidad
-
-	glColor3f(0.0f, 1.0f, 0.0f);
-	glVertex2d(1.0f, -1.0f);
-
-	glColor3f(0.0f, 0.0f, 1.0f);
-	glVertex2d(0.0f, 1.0f);
-
-	glEnd();*/
+	// Activamos el vertexShader y el fragmentShader utilizando el manager
+	//glUseProgram(shaderProgram);
 
 	// Activamos el manager y en este momento se activan todos los VBOs asociados automáticamente
-	glBindVertexArray(vao);
-	// Función de dibujado SIN índices a partir de qué vértice y cuántos más se dibujarán
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 12);
-	// Terminamos de utilizar el manager
-	glBindVertexArray(0);
+	//glBindVertexArray(vao);
 
+	// Función de dibujado SIN índices a partir de qué vértice y cuántos más se dibujarán
+	//glDrawArrays(GL_TRIANGLE_STRIP, 0, 12);
+
+	// Terminamos de utilizar el manager
+	//glBindVertexArray(0);
+	
 	// Desactivamos el manager
-	glUseProgram(0);
+	//glUseProgram(0);
+	*/
 
 	//Cuando terminamos de renderear, cambiamos los buffers
 	glutSwapBuffers();
@@ -154,6 +165,12 @@ void Idle() {
 	// Cuando OpenGL entra en modo Idle o de resposo (para guardar batería, por ejemplo)}
 	// le decimos que vuelva a dibujar => vuelve a mandar a llamar GameLoop
 	glutPostRedisplay();
+}
+
+void ReshapeWindow(int width, int height) {
+	// Para configurar un uniform, tenemos que decirle a OpenGL que vamos a utilizar el shader program (manager)
+	glViewport(0, 0, width, height);
+	//shProgram.SetUniform("Resolution", width, height);
 }
 
 int main(int argc, char* argv[]) {
@@ -176,16 +193,19 @@ int main(int argc, char* argv[]) {
 	// true color RGBA, un buffer de produndidad y un segundo buffer para renderear
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE); // Dos framebuffers
 
-															   // Iniciar las dimensiones de la ventana (en pixeles)
+	// Iniciar las dimensiones de la ventana (en pixeles)
 	glutInitWindowSize(400, 400);
 
 	// Creeamos la ventana y le damos un título.
-	glutCreateWindow("Título Genial GL");
+	glutCreateWindow("Título Súper Cool GL");
 
 	glutDisplayFunc(GameLoop);
+	
 	// Asociamos una función para el cambio de la resolución de la ventana
 	// FreeGlut la va a mandar a llamar cuando alguien cambie el tamaño de la ventana
-	// Cuanso OpenGL entre en modo de reposo
+	glutReshapeFunc(ReshapeWindow);
+
+	// Cuando OpenGL entre en modo de reposo
 	glutIdleFunc(Idle);
 
 	// Inicializamos GLEW. Esta librería se encarga de obtener el API de OpenGL de nuestra tarjeta de video

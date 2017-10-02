@@ -122,14 +122,20 @@
     <ClCompile Include="InputFile.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Main1.cpp" />
+    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Rectangle.cpp" />
+    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="ShaderProgram.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Circle.h" />
     <ClInclude Include="Employee.h" />
     <ClInclude Include="InputFile.h" />
     <ClInclude Include="InputFile1.h" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="Rectangle.h" />
+    <ClInclude Include="Shader.h" />
+    <ClInclude Include="ShaderProgram.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Prueba.txt" />
