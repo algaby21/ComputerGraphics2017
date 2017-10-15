@@ -187,7 +187,7 @@ void Initialise() {
 	shaderProgram->SetAttribute(1, "VertexColor");
 	shaderProgram->LinkProgram();
 
-	transform->SetRotation(0.0f, 0.0f, 45.0f);
+	transform->SetRotation(90.0f, 90.0f, 90.0f);
 	//camara->SetPerspective(0.5f, 0.5f, 0.5f, 0.5f);
 
 	camara->SetOrthographic(6.0f, 1.0f);
@@ -214,7 +214,7 @@ void GameLoop() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//camara->MoveForward(0.00001f);
-	transform->Rotate(0.01f, 0.01f, 0.01f, true);
+	transform->Rotate(-0.015f, 0.015f, -0.015f, false);
 
 	shaderProgram->Activate();
 	// Le pedimos a transform la matriz de modelo para que el uniform del shader haga lo que quiera
