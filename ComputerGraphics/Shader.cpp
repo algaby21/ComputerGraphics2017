@@ -22,9 +22,7 @@ void Shader::CreateShader(string path, GLenum type) {
 	// Utiliza path para abrir un archivo y obtener el código fuente del shader.
 	// Crea un nuevo shader del tipo type y guarda su identificador en _shaderHandle.
 	// Si ya ha sido cargado un shader antes, primero se borra y luego se genera uno nuevo.
-	if (_shaderHandle != 0) {
-		glDeleteShader(_shaderHandle);
-	}
+	if (_shaderHandle) glDeleteShader(_shaderHandle);
 	InputFile myfile;
 	myfile.Read(path);
 	string source = myfile.GetContents();

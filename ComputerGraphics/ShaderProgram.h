@@ -25,6 +25,7 @@ public:
 	void SetUniform(string name, float x, float y);
 	void SetUniform(string name, float x, float y, float z);
 	void SetUniform(string name, float x, float y, float z, float w);
+	void SetUniformMatrix(string name, mat4 matrix);
 
 private:
 	void DeleteAndDetachShaders();

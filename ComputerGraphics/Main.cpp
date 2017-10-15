@@ -7,12 +7,13 @@ Autor: A01169073 Aldo A. Reyna Gómez
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <iostream>
-#include <vector>
 #include <glm/glm.hpp>
-#include "InputFile.h"
+#include <vector>
+
 #include "Mesh.h"
-#include "Shader.h"
 #include "ShaderProgram.h"
+#include "Transform.h"
+#include "Camera.h"
 
 using namespace std;
 using namespace glm;
@@ -21,6 +22,8 @@ using namespace glm;
 unique_ptr<Mesh> mesh(new Mesh);
 // Identificador del manager de los shaders (shaderProgram)
 unique_ptr<ShaderProgram> shaderProgram(new ShaderProgram);
+unique_ptr<Transform> transform(new Transform);
+unique_ptr<Camera> camara(new Camera);
 
 // Identificador del manager al que vamos a asociar todos los VBOs que tenga nuestra geometría
 GLuint vao;
@@ -29,23 +32,91 @@ GLuint vao;
 // GLuint shaderProgram;
 
 void Initialise() {
-
-	// Inicia un nuevo mesh y crea un manager VAO con 12 vértices
-	mesh->CreateMesh(12);
-	
-	vector<vec2> positions;
+	vector<vec3> positions;
 	vector<vec3> colors;
 
-	float arr[6] = { 18.f, 306.f, 234.f, 162.f, 90.f, 18.f };
+	/*float arr[6] = { 18.f, 306.f, 234.f, 162.f, 90.f, 18.f };
 	for (int i = 0; i < 6; i++) {
-		positions.push_back(vec2(cos(radians(arr[i])), sin(radians(arr[i]))));
-		colors.push_back(vec3(0.0f, 0.0f, 1.0f));
-		positions.push_back(vec2(0.5*cos(radians(arr[i])), 0.5*sin(radians(arr[i]))));
-		colors.push_back(vec3(1.0f, 0.0f, 0.0f));
-	}
+	positions.push_back(vec2(cos(radians(arr[i])), sin(radians(arr[i]))));
+	colors.push_back(vec3(0.0f, 0.0f, 1.0f));
+	positions.push_back(vec2(0.5*cos(radians(arr[i])), 0.5*sin(radians(arr[i]))));
+	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
+	}*/
+	
+	// Cara frontal
+	positions.push_back(vec3(-3.0f, -3.0f, 3.0f));	
+	positions.push_back(vec3(3.0f, -3.0f, 3.0f));	
+	positions.push_back(vec3(3.0f, 3.0f, 3.0f));	
+	positions.push_back(vec3(-3.0f, 3.0f, 3.0f));
+	colors.push_back(vec3(0.0f, 1.0f, 0.0f));
+	colors.push_back(vec3(0.0f, 1.0f, 0.0f));
+	colors.push_back(vec3(0.0f, 1.0f, 0.0f));
+	colors.push_back(vec3(0.0f, 1.0f, 0.0f));
 
+	// Cara lateral derecha
+	positions.push_back(vec3(3.0f, 3.0f, 3.0f));
+	positions.push_back(vec3(3.0f, 3.0f, -3.0f));
+	positions.push_back(vec3(3.0f, -3.0f, -3.0f));
+	positions.push_back(vec3(3.0f, -3.0f, 3.0f));
+	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
+	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
+	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
+	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
+	
+	// Cara trasera
+	positions.push_back(vec3(-3.0f, -3.0f, -3.0f));
+	positions.push_back(vec3(3.0f, -3.0f, -3.0f));
+	positions.push_back(vec3(3.0f, 3.0f, -3.0f));
+	positions.push_back(vec3(-3.0f, 3.0f, -3.0f));
+	colors.push_back(vec3(0.0f, 0.0f, 1.0f));
+	colors.push_back(vec3(0.0f, 0.0f, 1.0f));
+	colors.push_back(vec3(0.0f, 0.0f, 1.0f));
+	colors.push_back(vec3(0.0f, 0.0f, 1.0f));
+	
+	// Cara lateral izquierda
+	positions.push_back(vec3(-3.0f, -3.0f, -3.0f));
+	positions.push_back(vec3(-3.0f, -3.0f, 3.0f));
+	positions.push_back(vec3(-3.0f, 3.0f, 3.0f));
+	positions.push_back(vec3(-3.0f, 3.0f, -3.0f));
+	colors.push_back(vec3(1.0f, 0.5f, 0.0f));
+	colors.push_back(vec3(1.0f, 0.5f, 0.0f));
+	colors.push_back(vec3(1.0f, 0.5f, 0.0f));
+	colors.push_back(vec3(1.0f, 0.5f, 0.0f));
+	
+	// Cara superior
+	positions.push_back(vec3(3.0f, 3.0f, 3.0f));
+	positions.push_back(vec3(-3.0f, 3.0f, 3.0f));
+	positions.push_back(vec3(-3.0f, 3.0f, -3.0f));
+	positions.push_back(vec3(3.0f, 3.0f, -3.0f));
+	colors.push_back(vec3(1.0f, 1.0f, 1.0f));
+	colors.push_back(vec3(1.0f, 1.0f, 1.0f));
+	colors.push_back(vec3(1.0f, 1.0f, 1.0f));
+	colors.push_back(vec3(1.0f, 1.0f, 1.0f));
+	
+	// Cara inferior
+	positions.push_back(vec3(-3.0f, -3.0f, -3.0f));
+	positions.push_back(vec3(3.0f, -3.0f, -3.0f));
+	positions.push_back(vec3(3.0f, -3.0f, 3.0f));
+	positions.push_back(vec3(-3.0f, -3.0f, 3.0f));
+	colors.push_back(vec3(1.0f, 1.0f, 0.0f));
+	colors.push_back(vec3(1.0f, 1.0f, 0.0f));
+	colors.push_back(vec3(1.0f, 1.0f, 0.0f));
+	colors.push_back(vec3(1.0f, 1.0f, 0.0f));
+
+	vector<unsigned int> indices = {
+		0, 1, 2, 0, 2, 3, // Frontal
+		4, 5, 6, 4, 6, 7, // Derecha
+		8, 9, 10, 8, 10, 11, // Trasera
+		12, 13, 14, 12, 14, 15, // Izquierda
+		16, 17, 18, 16, 18, 19, // Superior
+		20, 21, 22, 20, 22, 23 // Inferior
+	};
+
+	mesh->CreateMesh(positions.size());
 	mesh->SetPositionAttribute(positions, GL_STATIC_DRAW, 0);
 	mesh->SetColorAttribute(colors, GL_STATIC_DRAW, 1);
+	mesh->SetIndices(indices, GL_STATIC_DRAW);
+	cout << indices.size() << endl;
 
 	/*/
 	// Queremos gengerar 1 manager
@@ -78,7 +149,6 @@ void Initialise() {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);*/
 
-		
 	/*
 	// Creamos un objeto para leer archivos
 	InputFile myfile;
@@ -90,10 +160,10 @@ void Initialise() {
 	string vertexSource = myfile.GetContents();
 	// Creamos un shader de tipo vertex guardamos su identificador en una variable
 	GLuint vertexShaderHandle =
-		glCreateShader(GL_VERTEX_SHADER);
+	glCreateShader(GL_VERTEX_SHADER);
 	// Obtener los datos en el formato correcto: Vil Cast
 	const GLchar *vertexSource_c =
-		(const GLchar*)vertexSource.c_str();
+	(const GLchar*)vertexSource.c_str();
 	// Le estamos dando el código fuente a OpenGL para que se los asigne al shader
 	glShaderSource(vertexShaderHandle, 1, &vertexSource_c, nullptr);
 	// Compilamos el shader en busca de errores.
@@ -103,19 +173,25 @@ void Initialise() {
 	myfile.Read("Default.frag");
 	string fragmentSource = myfile.GetContents();
 	GLuint fragmentShaderHandle =
-		glCreateShader(GL_FRAGMENT_SHADER);
+	glCreateShader(GL_FRAGMENT_SHADER);
 	const GLchar *fragmentSource_c =
-		(const GLchar*)fragmentSource.c_str();
+	(const GLchar*)fragmentSource.c_str();
 	// Continuar leyendo hasta que encuentre un nullptr
 	glShaderSource(fragmentShaderHandle, 1, &fragmentSource_c, nullptr);
 	glCompileShader(fragmentShaderHandle);*/
-	
+
 	shaderProgram->CreateProgram();
 	shaderProgram->AttachShader("Default.vert", GL_VERTEX_SHADER);
 	shaderProgram->AttachShader("Default.frag", GL_FRAGMENT_SHADER);
 	shaderProgram->SetAttribute(0, "VertexPosition");
 	shaderProgram->SetAttribute(1, "VertexColor");
 	shaderProgram->LinkProgram();
+
+	transform->SetRotation(0.0f, 0.0f, 45.0f);
+	//camara->SetPerspective(0.5f, 0.5f, 0.5f, 0.5f);
+
+	camara->SetOrthographic(6.0f, 1.0f);
+	//camara->SetPosition(0.5f, 0.5f, 0.5f);
 
 	/*
 	// Regresa el identificador de este manager
@@ -134,12 +210,19 @@ void Initialise() {
 }
 
 void GameLoop() {
+	// Siempre hacerlo al inicio del frame!
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	//camara->MoveForward(0.00001f);
+	transform->Rotate(0.01f, 0.01f, 0.01f, true);
+
 	shaderProgram->Activate();
-	mesh->Draw(GL_TRIANGLE_STRIP);
+	// Le pedimos a transform la matriz de modelo para que el uniform del shader haga lo que quiera
+	shaderProgram->SetUniformMatrix("mvpMatrix", camara->GetViewProjection()*transform->GetModelMatrix());
+	mesh->Draw(GL_TRIANGLES);
+	//mesh->Draw(GL_TRIANGLE_STRIP);
 	shaderProgram->Deactivate();
-	
+
 	/*
 	// Activamos el vertexShader y el fragmentShader utilizando el manager
 	//glUseProgram(shaderProgram);
@@ -152,7 +235,7 @@ void GameLoop() {
 
 	// Terminamos de utilizar el manager
 	//glBindVertexArray(0);
-	
+
 	// Desactivamos el manager
 	//glUseProgram(0);
 	*/
@@ -200,7 +283,7 @@ int main(int argc, char* argv[]) {
 	glutCreateWindow("Título Súper Cool GL");
 
 	glutDisplayFunc(GameLoop);
-	
+
 	// Asociamos una función para el cambio de la resolución de la ventana
 	// FreeGlut la va a mandar a llamar cuando alguien cambie el tamaño de la ventana
 	glutReshapeFunc(ReshapeWindow);
@@ -213,6 +296,16 @@ int main(int argc, char* argv[]) {
 
 	// Configurar OpenGl. Este es el color por dedault del buffer de color en el framebuffer.
 	glClearColor(1.0f, 1.0f, 0.5f, 1.0f);
+	// Ademas de solicitar el buffer de profundidad, tenemos
+	// que decirle a OpenGL que lo queremos activo
+	glEnable(GL_DEPTH_TEST);
+	//glDepthFunc(GL_LESS);
+	// Activamos el borrado de caras traseras.
+	// Ahora todos los triangulos que dibujemos deben estar en CCW
+	//glEnable(GL_CULL_FACE);
+	// No dibujar las caras traseras de las geometrías.
+	//glCullFace(GL_BACK);
+	//glFrontFace(GL_CW);
 
 	cout << glGetString(GL_VERSION) << endl;
 
