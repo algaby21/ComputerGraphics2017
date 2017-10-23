@@ -8,10 +8,11 @@ Autor: A01169073 Aldo A. Reyna Gómez
 #include <GL/freeglut.h>
 #include <iostream>
 #include <glm/glm.hpp>
+#include "glm/gtx/string_cast.hpp"
 #include <vector>
 
 #include "Mesh.h"
-#include "ShaderProgram.h"
+#include "ShaderProgram.h"	
 #include "Transform.h"
 #include "Camera.h"
 
@@ -22,7 +23,8 @@ using namespace glm;
 unique_ptr<Mesh> mesh(new Mesh);
 // Identificador del manager de los shaders (shaderProgram)
 unique_ptr<ShaderProgram> shaderProgram(new ShaderProgram);
-unique_ptr<Transform> transform(new Transform);
+unique_ptr<Transform> geometria1(new Transform); // Geometría 1
+unique_ptr<Transform> geometria2(new Transform); // Geometría 2
 unique_ptr<Camera> camara(new Camera);
 
 // Identificador del manager al que vamos a asociar todos los VBOs que tenga nuestra geometría
@@ -30,6 +32,12 @@ GLuint vao;
 
 // Identificador del manager de los shaders (shaderProgramme)
 // GLuint shaderProgram;
+
+float pos = 0.0; // Índice para la trayectoria del círculo de la geometría1
+float deltaCirculo = 0.01f;
+float inc = 0.0; // Incremento en la escala de la geometría2
+float deltaEscala = 0.00005f;
+double colour = 0.0; // Color de fondo
 
 void Initialise() {
 	vector<vec3> positions;
@@ -42,11 +50,12 @@ void Initialise() {
 	positions.push_back(vec2(0.5*cos(radians(arr[i])), 0.5*sin(radians(arr[i]))));
 	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
 	}*/
-	
+
+	/*
 	// Cara frontal
-	positions.push_back(vec3(-3.0f, -3.0f, 3.0f));	
-	positions.push_back(vec3(3.0f, -3.0f, 3.0f));	
-	positions.push_back(vec3(3.0f, 3.0f, 3.0f));	
+	positions.push_back(vec3(-3.0f, -3.0f, 3.0f));
+	positions.push_back(vec3(3.0f, -3.0f, 3.0f));
+	positions.push_back(vec3(3.0f, 3.0f, 3.0f));
 	positions.push_back(vec3(-3.0f, 3.0f, 3.0f));
 	colors.push_back(vec3(0.0f, 1.0f, 0.0f));
 	colors.push_back(vec3(0.0f, 1.0f, 0.0f));
@@ -62,7 +71,7 @@ void Initialise() {
 	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
 	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
 	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
-	
+
 	// Cara trasera
 	positions.push_back(vec3(-3.0f, -3.0f, -3.0f));
 	positions.push_back(vec3(3.0f, -3.0f, -3.0f));
@@ -72,7 +81,7 @@ void Initialise() {
 	colors.push_back(vec3(0.0f, 0.0f, 1.0f));
 	colors.push_back(vec3(0.0f, 0.0f, 1.0f));
 	colors.push_back(vec3(0.0f, 0.0f, 1.0f));
-	
+
 	// Cara lateral izquierda
 	positions.push_back(vec3(-3.0f, -3.0f, -3.0f));
 	positions.push_back(vec3(-3.0f, -3.0f, 3.0f));
@@ -82,7 +91,7 @@ void Initialise() {
 	colors.push_back(vec3(1.0f, 0.5f, 0.0f));
 	colors.push_back(vec3(1.0f, 0.5f, 0.0f));
 	colors.push_back(vec3(1.0f, 0.5f, 0.0f));
-	
+
 	// Cara superior
 	positions.push_back(vec3(3.0f, 3.0f, 3.0f));
 	positions.push_back(vec3(-3.0f, 3.0f, 3.0f));
@@ -92,7 +101,7 @@ void Initialise() {
 	colors.push_back(vec3(1.0f, 1.0f, 1.0f));
 	colors.push_back(vec3(1.0f, 1.0f, 1.0f));
 	colors.push_back(vec3(1.0f, 1.0f, 1.0f));
-	
+
 	// Cara inferior
 	positions.push_back(vec3(-3.0f, -3.0f, -3.0f));
 	positions.push_back(vec3(3.0f, -3.0f, -3.0f));
@@ -111,12 +120,104 @@ void Initialise() {
 		16, 17, 18, 16, 18, 19, // Superior
 		20, 21, 22, 20, 22, 23 // Inferior
 	};
+	*/
 
-	mesh->CreateMesh(positions.size());
-	mesh->SetPositionAttribute(positions, GL_STATIC_DRAW, 0);
-	mesh->SetColorAttribute(colors, GL_STATIC_DRAW, 1);
-	mesh->SetIndices(indices, GL_STATIC_DRAW);
-	cout << indices.size() << endl;
+	/*
+	// Cara frontal
+	positions.push_back(vec3(-3.0f, -3.0f, 3.0f));
+	positions.push_back(vec3(3.0f, -3.0f, 3.0f));
+	positions.push_back(vec3(3.0f, 3.0f, 3.0f));
+	positions.push_back(vec3(-3.0f, 3.0f, 3.0f));
+	colors.push_back(vec3(0.0f, 1.0f, 0.0f));
+	colors.push_back(vec3(0.0f, 1.0f, 0.0f));
+	colors.push_back(vec3(0.0f, 1.0f, 0.0f));
+	colors.push_back(vec3(0.0f, 1.0f, 0.0f));
+
+	// Cara lateral derecha
+	positions.push_back(vec3(3.0f, 3.0f, 3.0f));
+	positions.push_back(vec3(3.0f, 3.0f, -3.0f));
+	positions.push_back(vec3(3.0f, -3.0f, -3.0f));
+	positions.push_back(vec3(3.0f, -3.0f, 3.0f));
+	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
+	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
+	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
+	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
+
+	// Cara trasera
+	positions.push_back(vec3(-3.0f, -3.0f, -3.0f));
+	positions.push_back(vec3(3.0f, -3.0f, -3.0f));
+	positions.push_back(vec3(3.0f, 3.0f, -3.0f));
+	positions.push_back(vec3(-3.0f, 3.0f, -3.0f));
+	colors.push_back(vec3(0.0f, 0.0f, 1.0f));
+	colors.push_back(vec3(0.0f, 0.0f, 1.0f));
+	colors.push_back(vec3(0.0f, 0.0f, 1.0f));
+	colors.push_back(vec3(0.0f, 0.0f, 1.0f));
+
+	// Cara lateral izquierda
+	positions.push_back(vec3(-3.0f, -3.0f, -3.0f));
+	positions.push_back(vec3(-3.0f, -3.0f, 3.0f));
+	positions.push_back(vec3(-3.0f, 3.0f, 3.0f));
+	positions.push_back(vec3(-3.0f, 3.0f, -3.0f));
+	colors.push_back(vec3(1.0f, 0.5f, 0.0f));
+	colors.push_back(vec3(1.0f, 0.5f, 0.0f));
+	colors.push_back(vec3(1.0f, 0.5f, 0.0f));
+	colors.push_back(vec3(1.0f, 0.5f, 0.0f));
+
+	// Cara superior
+	positions.push_back(vec3(3.0f, 3.0f, 3.0f));
+	positions.push_back(vec3(-3.0f, 3.0f, 3.0f));
+	positions.push_back(vec3(-3.0f, 3.0f, -3.0f));
+	positions.push_back(vec3(3.0f, 3.0f, -3.0f));
+	colors.push_back(vec3(1.0f, 1.0f, 1.0f));
+	colors.push_back(vec3(1.0f, 1.0f, 1.0f));
+	colors.push_back(vec3(1.0f, 1.0f, 1.0f));
+	colors.push_back(vec3(1.0f, 1.0f, 1.0f));
+
+	// Cara inferior
+	positions.push_back(vec3(-3.0f, -3.0f, -3.0f));
+	positions.push_back(vec3(3.0f, -3.0f, -3.0f));
+	positions.push_back(vec3(3.0f, -3.0f, 3.0f));
+	positions.push_back(vec3(-3.0f, -3.0f, 3.0f));
+	colors.push_back(vec3(1.0f, 1.0f, 0.0f));
+	colors.push_back(vec3(1.0f, 1.0f, 0.0f));
+	colors.push_back(vec3(1.0f, 1.0f, 0.0f));
+	colors.push_back(vec3(1.0f, 1.0f, 0.0f));
+
+	vector<unsigned int> indices = {
+		0, 1, 2, 0, 2, 3, // Frontal
+		4, 5, 6, 4, 6, 7, // Derecha
+		8, 9, 10, 8, 10, 11, // Trasera
+		12, 13, 14, 12, 14, 15, // Izquierda
+		16, 17, 18, 16, 18, 19, // Superior
+		20, 21, 22, 20, 22, 23 // Inferior
+	};
+	*/
+
+	vector<vec3> positionsPyramid;
+	vector<vec3> colorsPyramid;
+
+	// Cara frontal
+	positionsPyramid.push_back(vec3(-1.0f, -1.0f, -1.0f));		//0
+	positionsPyramid.push_back(vec3(-1.0f, -1.0f, 1.0f));		//1
+	positionsPyramid.push_back(vec3(1.0f, -1.0f, 1.0f));		//2
+	positionsPyramid.push_back(vec3(1.0f, -1.0f, -1.0f));		//3
+	positionsPyramid.push_back(vec3(0.0f, 1.0f, 0.0f));			//4
+	colorsPyramid.push_back(vec3(1.0f, 0.0f, 0.0f));
+	colorsPyramid.push_back(vec3(0.0f, 1.0f, 0.0f));
+	colorsPyramid.push_back(vec3(0.0f, 0.0f, 1.0f));
+	colorsPyramid.push_back(vec3(1.0f, 1.0f, 0.0f));
+	colorsPyramid.push_back(vec3(0.0f, 1.0f, 1.0f));
+
+	vector<unsigned int> indicesPyramid = {
+		0, 1, 2, 0, 2, 3,
+		0, 1, 4, 1, 2, 4,
+		2, 3, 4, 3, 0, 4
+	};
+
+	mesh->CreateMesh(positionsPyramid.size());
+	mesh->SetPositionAttribute(positionsPyramid, GL_STATIC_DRAW, 0);
+	mesh->SetColorAttribute(colorsPyramid, GL_STATIC_DRAW, 1);
+	mesh->SetIndices(indicesPyramid, GL_STATIC_DRAW);
 
 	/*/
 	// Queremos gengerar 1 manager
@@ -187,11 +288,31 @@ void Initialise() {
 	shaderProgram->SetAttribute(1, "VertexColor");
 	shaderProgram->LinkProgram();
 
-	transform->SetRotation(90.0f, 90.0f, 90.0f);
-	//camara->SetPerspective(0.5f, 0.5f, 0.5f, 0.5f);
+	// El cubo del piso
+	//transform1->SetRotation(90.0f, 0.0f, 0.0f);
+	//transform1->SetScale(2.0f, 0.001f, 1.0f);
+	//transform1->SetPosition(0.0f, -8.0f, 12.0f);
 
-	camara->SetOrthographic(6.0f, 1.0f);
-	//camara->SetPosition(0.5f, 0.5f, 0.5f);
+
+	//camara->SetPosition(0.0f, 0.0f, 0.0f); // Cámara en el origen
+	//camara->SetOrthographic(2.0f, 1.0f);
+	//camara->SetPerspective(-2.0f, -4.0f, 4.0f, 1.0f);
+	//camara->SetPerspective(0.7f, 1000.0f, 60.0f, 1.0f);
+	//camara->SetRotation(90.0f, 0, 0);
+	
+	
+
+	// Cambio de escala de la geometría1 a 3 veces su tamaño original en los 3 ejes
+	geometria1->SetScale(3, 3, 3);
+
+	// Inicialmente la geometría2 empieza con una escala de 0.5
+	geometria2->SetScale(0.5f, 0.5f, 0.5f);
+	// La posición de la geometría2 siempre está en (0,0,0)
+	geometria2->SetPosition(0, 0, 0);
+
+	// Colocando la cámara en (0, 0, 25) para visualizar correctamente las dos geometrías
+	camara->SetPosition(0, 0, 25.0f);
+	//camara->MoveForward(24.0f);
 
 	/*
 	// Regresa el identificador de este manager
@@ -212,16 +333,33 @@ void Initialise() {
 void GameLoop() {
 	// Siempre hacerlo al inicio del frame!
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	// Geometría1 rota en sus tres ejes coordenados
+	geometria1->Rotate(0.03f, 0.015f, 0.03f, false);
+	// Geometría1 sigue una trayectoria circular en el plano XY
+	geometria1->SetPosition(5 * cos(radians(pos)), 5 * sin(radians(pos)), 0);
+	pos += deltaCirculo;
 
-	//camara->MoveForward(0.00001f);
-	transform->Rotate(-0.015f, 0.015f, -0.015f, false);
+	// Geometría2 rota en sus tres ejes coordenados, pero en sentido contrario
+	geometria2->Rotate(-0.03f, -0.015f, -0.03f, false);
+
+	// Incrementar la escala de la geometría2 en el rango de 0.25 -> 1.0
+	geometria2->SetScale(0.5f + inc, 0.5f + inc, 0.5f + inc);
+	if (geometria2->GetScale().x <= 0.25f || geometria2->GetScale().x >= 1.0f) {
+		deltaEscala *= -1.0f;
+	}
+	inc += deltaEscala;
 
 	shaderProgram->Activate();
-	// Le pedimos a transform la matriz de modelo para que el uniform del shader haga lo que quiera
-	shaderProgram->SetUniformMatrix("mvpMatrix", camara->GetViewProjection()*transform->GetModelMatrix());
+	// Dibujado de geometría1
+	shaderProgram->SetUniformMatrix("mvpMatrix", camara->GetViewProjection()*geometria1->GetModelMatrix());
 	mesh->Draw(GL_TRIANGLES);
-	//mesh->Draw(GL_TRIANGLE_STRIP);
+	// Dibujado de geometría2
+	shaderProgram->SetUniformMatrix("mvpMatrix", camara->GetViewProjection()*geometria2->GetModelMatrix());
+	mesh->Draw(GL_TRIANGLES);
+
 	shaderProgram->Deactivate();
+
 
 	/*
 	// Activamos el vertexShader y el fragmentShader utilizando el manager
@@ -230,8 +368,7 @@ void GameLoop() {
 	// Activamos el manager y en este momento se activan todos los VBOs asociados automáticamente
 	//glBindVertexArray(vao);
 
-	// Función de dibujado SIN índices a partir de qué vértice y cuántos más se dibujarán
-	//glDrawArrays(GL_TRIANGLE_STRIP, 0, 12);
+	//glDrawArrays(GL_TRIANGLE_STRIP, 0, 12);ime
 
 	// Terminamos de utilizar el manager
 	//glBindVertexArray(0);
@@ -242,6 +379,33 @@ void GameLoop() {
 
 	//Cuando terminamos de renderear, cambiamos los buffers
 	glutSwapBuffers();
+
+	// Cambiando la tonalidad del fondo
+	colour += 0.01f;
+	glClearColor(0.5 + 0.5*cos(radians(colour)), 0.5 + 0.5*sin(radians(colour)), sin(radians(colour))*cos(radians(colour)), 1.0f);
+}
+
+// Función que mueve la cámara dependiendo de la tecla presionada
+void Keyboard(unsigned char key, int x, int y) {
+	if (key == 'w')
+		camara->MoveForward(0.1f, false);
+	if (key == 's')
+		camara->MoveForward(-0.1f, false);
+	if (key == 'd')
+		camara->MoveRight(0.1f, false);
+	if (key == 'a')
+		camara->MoveRight(-0.1f, false);
+}
+
+void SpecialKeys(int key, int x, int y) {
+	if (key == GLUT_KEY_UP)
+		camara->MoveForward(0.1f, false);
+	if (key == GLUT_KEY_DOWN)
+		camara->MoveForward(-0.1f, false);
+	if (key == GLUT_KEY_RIGHT)
+		camara->Rotate(0.0f, 4.0f, 0.0f, true);
+	if (key == GLUT_KEY_LEFT)
+		camara->Rotate(0.0f, -4.0f, 0.0f, true);
 }
 
 void Idle() {
@@ -290,6 +454,10 @@ int main(int argc, char* argv[]) {
 
 	// Cuando OpenGL entre en modo de reposo
 	glutIdleFunc(Idle);
+
+	// Avisar que existen la funciones que detectan el teclado
+	glutKeyboardFunc(Keyboard);
+	glutSpecialFunc(SpecialKeys);
 
 	// Inicializamos GLEW. Esta librería se encarga de obtener el API de OpenGL de nuestra tarjeta de video
 	glewInit();
