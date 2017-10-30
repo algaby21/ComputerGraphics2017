@@ -26,6 +26,8 @@ public:
 	void SetUniform(string name, float x, float y, float z);
 	void SetUniform(string name, float x, float y, float z, float w);
 	void SetUniformMatrix(string name, mat4 matrix);
+	void SetUniformMatrix(string name, mat3 matrix);
+	void SetUniformVec(string name, vec3 vec);
 
 private:
 	void DeleteAndDetachShaders();

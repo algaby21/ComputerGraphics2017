@@ -12,7 +12,8 @@ Mesh::Mesh(){
 	vao = 0;
 	positionsVBO = 0;
 	colorsVBO = 0;
-	indicesBO = 0,
+	indicesBO = 0;
+	normalVBO = 0;
 	_vertexCount = 0;
 	_indicesCount = 0;
 }
@@ -23,6 +24,7 @@ Mesh::~Mesh(){
 	glDeleteBuffers(1, &positionsVBO);
 	glDeleteBuffers(1, &colorsVBO);
 	glDeleteBuffers(1, &indicesBO);
+	glDeleteBuffers(1, &normalVBO);
 	_vertexCount = 0;
 	//_indicesCount = 0;
 }
@@ -64,6 +66,11 @@ void Mesh::SetColorAttribute(vector<vec3> colors, GLenum usage, GLuint locationI
 void Mesh::SetColorAttribute(vector<vec4> colors, GLenum usage, GLuint locationIndex){
 	if (colors.size() > 0 && colors.size() == _vertexCount)
 		SetAttributeData(positionsVBO, sizeof(vec4)*colors.size(), colors.data(), usage, locationIndex, 4);
+}
+
+void Mesh::SetNormalAttribute(vector<vec3> normal, GLenum usage, GLuint locationIndex){
+	if (normal.size() > 0 && normal.size() == _vertexCount)
+		SetAttributeData(normalVBO, sizeof(vec3)*normal.size(), normal.data(), usage, locationIndex, 3);
 }
 
 void Mesh::SetIndices(vector<unsigned int> indices, GLenum usage) {
