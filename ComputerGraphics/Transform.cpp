@@ -116,7 +116,7 @@ void Transform::UpdateModelMatrixPosition() {
 void Transform::UpdateModelMatrixRotationScale() {
 	_modelMatrix = mat4_cast(_rotation);
 	_modelMatrix[0] *= _scale.x;
-	_modelMatrix[1] *= _scale.x;
+	_modelMatrix[1] *= _scale.y;
 	_modelMatrix[2] *= _scale.z;
 	UpdateModelMatrixPosition();
 	UpdateLocalVectors();

@@ -62,6 +62,11 @@ void ShaderProgram::SetAttribute(GLuint locationIndex, string name){
 	glBindAttribLocation(_programHandle, locationIndex, name.c_str());
 }
 
+void ShaderProgram::SetUniformi(string name, int value) {
+	GLint uniformLocation = glGetUniformLocation(_programHandle, name.c_str());
+	glUniform1i(uniformLocation, value);;
+}
+
 void ShaderProgram::SetUniform(string name, float value){
 	// Encuentra la posición de la variable en el shader y le da el valor correcto.
 	GLint uniformLocation = glGetUniformLocation(_programHandle, name.c_str());

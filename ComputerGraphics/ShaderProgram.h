@@ -21,6 +21,7 @@ public:
 	void Activate();
 	void Deactivate();
 	void SetAttribute(GLuint locationIndex, string name);
+	void SetUniformi(string name, int value);
 	void SetUniform(string name, float value);
 	void SetUniform(string name, float x, float y);
 	void SetUniform(string name, float x, float y, float z);

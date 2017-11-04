@@ -4,6 +4,7 @@ Fecha: 16 de septiembre del 2017
 Autor: A01169073 Aldo A. Reyna Gómez
 *********************************************************/
 
+#include <IL/il.h>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <iostream>
@@ -15,6 +16,7 @@ Autor: A01169073 Aldo A. Reyna Gómez
 #include "ShaderProgram.h"	
 #include "Transform.h"
 #include "Camera.h"
+#include "Texture2D.h"
 
 using namespace std;
 using namespace glm;
@@ -26,6 +28,10 @@ unique_ptr<ShaderProgram> shaderProgram(new ShaderProgram);
 unique_ptr<Transform> geometria1(new Transform); // Geometría 1: cubo rotando
 unique_ptr<Transform> geometria2(new Transform); // Geometría 2: cubo piso estático
 unique_ptr<Camera> camara(new Camera);
+Texture2D myTexture1;
+Texture2D myTexture2;
+Texture2D myTexture3;
+//unique_ptr<Texture2D> myTexture3(new Texture2D);
 
 // Identificador del manager al que vamos a asociar todos los VBOs que tenga nuestra geometría
 GLuint vao;
@@ -41,10 +47,12 @@ double colour = 0.0; // Color de fondo
 vec3 lightColour = vec3(1.0f, 1.0f, 1.0f);
 vec3 lightPosition = vec3(-5.0f, 5.0f, 5.0f);
 
+
 void Initialise() {
 	vector<vec3> positions;
 	vector<vec3> colors;
 	vector<vec3> normals;
+	vector<vec2> textures;
 
 	/*float arr[6] = { 18.f, 306.f, 234.f, 162.f, 90.f, 18.f };
 	for (int i = 0; i < 6; i++) {
@@ -59,84 +67,84 @@ void Initialise() {
 	positions.push_back(vec3(3.0f, -3.0f, 3.0f));
 	positions.push_back(vec3(3.0f, 3.0f, 3.0f));
 	positions.push_back(vec3(-3.0f, 3.0f, 3.0f));
-	colors.push_back(vec3(0.0f, 1.0f, 0.0f));
-	colors.push_back(vec3(0.0f, 1.0f, 0.0f));
-	colors.push_back(vec3(0.0f, 1.0f, 0.0f));
-	colors.push_back(vec3(0.0f, 1.0f, 0.0f));
 	normals.push_back(vec3(0.0f, 0.0f, 1.0f));
 	normals.push_back(vec3(0.0f, 0.0f, 1.0f));
 	normals.push_back(vec3(0.0f, 0.0f, 1.0f));
 	normals.push_back(vec3(0.0f, 0.0f, 1.0f));
+	textures.push_back(vec2(0.0f, 0.0f));
+	textures.push_back(vec2(1.0f, 0.0f));
+	textures.push_back(vec2(1.0f, 1.0f));
+	textures.push_back(vec2(0.0f, 1.0f));
 
 	// Cara lateral derecha
 	positions.push_back(vec3(3.0f, 3.0f, 3.0f));
 	positions.push_back(vec3(3.0f, 3.0f, -3.0f));
 	positions.push_back(vec3(3.0f, -3.0f, -3.0f));
 	positions.push_back(vec3(3.0f, -3.0f, 3.0f));
-	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
-	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
-	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
-	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
 	normals.push_back(vec3(1.0f, 0.0f, 0.0f));
 	normals.push_back(vec3(1.0f, 0.0f, 0.0f));
 	normals.push_back(vec3(1.0f, 0.0f, 0.0f));
 	normals.push_back(vec3(1.0f, 0.0f, 0.0f));
+	textures.push_back(vec2(0.0f, 0.0f));
+	textures.push_back(vec2(1.0f, 0.0f));
+	textures.push_back(vec2(1.0f, 1.0f));
+	textures.push_back(vec2(0.0f, 1.0f));
 
 	// Cara trasera
 	positions.push_back(vec3(-3.0f, -3.0f, -3.0f));
 	positions.push_back(vec3(3.0f, -3.0f, -3.0f));
 	positions.push_back(vec3(3.0f, 3.0f, -3.0f));
 	positions.push_back(vec3(-3.0f, 3.0f, -3.0f));
-	colors.push_back(vec3(0.0f, 0.0f, 1.0f));
-	colors.push_back(vec3(0.0f, 0.0f, 1.0f));
-	colors.push_back(vec3(0.0f, 0.0f, 1.0f));
-	colors.push_back(vec3(0.0f, 0.0f, 1.0f));
 	normals.push_back(vec3(0.0f, 0.0f, -1.0f));
 	normals.push_back(vec3(0.0f, 0.0f, -1.0f));
 	normals.push_back(vec3(0.0f, 0.0f, -1.0f));
 	normals.push_back(vec3(0.0f, 0.0f, -1.0f));
+	textures.push_back(vec2(0.0f, 0.0f));
+	textures.push_back(vec2(1.0f, 0.0f));
+	textures.push_back(vec2(1.0f, 1.0f));
+	textures.push_back(vec2(0.0f, 1.0f));
 
 	// Cara lateral izquierda
 	positions.push_back(vec3(-3.0f, -3.0f, -3.0f));
 	positions.push_back(vec3(-3.0f, -3.0f, 3.0f));
 	positions.push_back(vec3(-3.0f, 3.0f, 3.0f));
 	positions.push_back(vec3(-3.0f, 3.0f, -3.0f));
-	colors.push_back(vec3(1.0f, 0.5f, 0.0f));
-	colors.push_back(vec3(1.0f, 0.5f, 0.0f));
-	colors.push_back(vec3(1.0f, 0.5f, 0.0f));
-	colors.push_back(vec3(1.0f, 0.5f, 0.0f));
 	normals.push_back(vec3(-1.0f, 0.0f, 0.0f));
 	normals.push_back(vec3(-1.0f, 0.0f, 0.0f));
 	normals.push_back(vec3(-1.0f, 0.0f, 0.0f));
 	normals.push_back(vec3(-1.0f, 0.0f, 0.0f));
+	textures.push_back(vec2(0.0f, 0.0f));
+	textures.push_back(vec2(1.0f, 0.0f));
+	textures.push_back(vec2(1.0f, 1.0f));
+	textures.push_back(vec2(0.0f, 1.0f));
 
 	// Cara superior
 	positions.push_back(vec3(3.0f, 3.0f, 3.0f));
 	positions.push_back(vec3(-3.0f, 3.0f, 3.0f));
 	positions.push_back(vec3(-3.0f, 3.0f, -3.0f));
 	positions.push_back(vec3(3.0f, 3.0f, -3.0f));
-	colors.push_back(vec3(1.0f, 1.0f, 1.0f));
-	colors.push_back(vec3(1.0f, 1.0f, 1.0f));
-	colors.push_back(vec3(1.0f, 1.0f, 1.0f));
-	colors.push_back(vec3(1.0f, 1.0f, 1.0f));
 	normals.push_back(vec3(0.0f, 1.0f, 0.0f));
 	normals.push_back(vec3(0.0f, 1.0f, 0.0f));
 	normals.push_back(vec3(0.0f, 1.0f, 0.0f));
 	normals.push_back(vec3(0.0f, 1.0f, 0.0f));
+	textures.push_back(vec2(0.0f, 0.0f));
+	textures.push_back(vec2(1.0f, 0.0f));
+	textures.push_back(vec2(1.0f, 1.0f));
+	textures.push_back(vec2(0.0f, 1.0f));
 
 	// Cara inferior
 	positions.push_back(vec3(-3.0f, -3.0f, -3.0f));
 	positions.push_back(vec3(3.0f, -3.0f, -3.0f));
 	positions.push_back(vec3(3.0f, -3.0f, 3.0f));
 	positions.push_back(vec3(-3.0f, -3.0f, 3.0f));
-	colors.push_back(vec3(1.0f, 1.0f, 0.0f));
-	colors.push_back(vec3(1.0f, 1.0f, 0.0f));
-	colors.push_back(vec3(1.0f, 1.0f, 0.0f));
-	colors.push_back(vec3(1.0f, 1.0f, 0.0f));
 	normals.push_back(vec3(0.0f, -1.0f, 0.0f));
 	normals.push_back(vec3(0.0f, -1.0f, 0.0f));
 	normals.push_back(vec3(0.0f, -1.0f, 0.0f));
 	normals.push_back(vec3(0.0f, -1.0f, 0.0f));
+	textures.push_back(vec2(0.0f, 0.0f));
+	textures.push_back(vec2(1.0f, 0.0f));
+	textures.push_back(vec2(1.0f, 1.0f));
+	textures.push_back(vec2(0.0f, 1.0f));
 
 	vector<unsigned int> indices = {
 		0, 1, 2, 0, 2, 3, // Frontal
@@ -147,32 +155,11 @@ void Initialise() {
 		20, 21, 22, 20, 22, 23 // Inferior
 	};
 
-	/*
-	vector<vec3> positionsPyramid;
-	vector<vec3> colorsPyramid;
-
-	// Cara frontal
-	positionsPyramid.push_back(vec3(-1.0f, -1.0f, -1.0f));		//0
-	positionsPyramid.push_back(vec3(-1.0f, -1.0f, 1.0f));		//1
-	positionsPyramid.push_back(vec3(1.0f, -1.0f, 1.0f));		//2
-	positionsPyramid.push_back(vec3(1.0f, -1.0f, -1.0f));		//3
-	positionsPyramid.push_back(vec3(0.0f, 1.0f, 0.0f));			//4
-	colorsPyramid.push_back(vec3(1.0f, 0.0f, 0.0f));
-	colorsPyramid.push_back(vec3(0.0f, 1.0f, 0.0f));
-	colorsPyramid.push_back(vec3(0.0f, 0.0f, 1.0f));
-	colorsPyramid.push_back(vec3(1.0f, 1.0f, 0.0f));
-	colorsPyramid.push_back(vec3(0.0f, 1.0f, 1.0f));
-
-	vector<unsigned int> indicesPyramid = {
-		0, 1, 2, 0, 2, 3,
-		0, 1, 4, 1, 2, 4,
-		2, 3, 4, 3, 0, 4
-	};*/
-
 	mesh->CreateMesh(positions.size());
 	mesh->SetPositionAttribute(positions, GL_STATIC_DRAW, 0);
 	mesh->SetColorAttribute(colors, GL_STATIC_DRAW, 1);
 	mesh->SetNormalAttribute(normals, GL_STATIC_DRAW, 2);
+	mesh->SetTexCoordAttribute(textures, GL_STATIC_DRAW, 3);
 	mesh->SetIndices(indices, GL_STATIC_DRAW);
 
 	/*/
@@ -238,43 +225,42 @@ void Initialise() {
 	glCompileShader(fragmentShaderHandle);*/
 
 	shaderProgram->CreateProgram();
-	shaderProgram->AttachShader("Default.vert", GL_VERTEX_SHADER);
-	shaderProgram->AttachShader("Default.frag", GL_FRAGMENT_SHADER);
+	shaderProgram->AttachShader("DefaultTexture.vert", GL_VERTEX_SHADER);
+	shaderProgram->AttachShader("DefaultTexture.frag", GL_FRAGMENT_SHADER);
 	shaderProgram->SetAttribute(0, "VertexPosition");
 	shaderProgram->SetAttribute(1, "VertexColour");
 	shaderProgram->SetAttribute(2, "VertexNormal");
+	shaderProgram->SetAttribute(3, "VertexTexCoord");
+
+	// Creando-cargando las texturas que se dibujarán
+	myTexture1.LoadTexture("box.jpg");
+	myTexture2.LoadTexture("pig.jpg");
+	myTexture3.LoadTexture("tiled.jpg");
+
 	shaderProgram->LinkProgram();
 
-	// El cubo del piso
-	//transform1->SetRotation(90.0f, 0.0f, 0.0f);
-	//transform1->SetScale(2.0f, 0.001f, 1.0f);
-	//transform1->SetPosition(0.0f, -8.0f, 12.0f);
-
-
-	//camara->SetPosition(0.0f, 0.0f, 0.0f); // Cámara en el origen
-	//camara->SetOrthographic(2.0f, 1.0f);
-	//camara->SetPerspective(-2.0f, -4.0f, 4.0f, 1.0f);
-	//camara->SetPerspective(0.7f, 1000.0f, 60.0f, 1.0f);
-	//camara->SetRotation(90.0f, 0, 0);
-	
-	
-
-	// Cambio de escala de la geometría1 a 3 veces su tamaño original en los 3 ejes
-	geometria2->SetScale(7, 3, 4);
-	geometria2->MoveUp(-30.0f, true);
-	geometria2->Rotate(0, 0, 90, true);
-
-	// Inicialmente la geometría2 empieza con una escala de 0.5
-	//geometria2->SetScale(0.5f, 0.5f, 0.5f);
-	// La posición de la geometría2 siempre está en (0,0,0)
-	//geometria2->SetPosition(0, 0, 0);
-
-	// Colocando la cámara en (0, 0, 25) para visualizar correctamente las dos geometrías
-	//camara->SetPosition(0, 0, 25.0f);
-	//camara->MoveUp(-5.0f, true);
-	//camara->SetRotation(-40.0f, 0.0f, 0.0f);
+	// Hacer la cámara hacia el observador para una mejor vista
 	camara->MoveForward(24.0f);
 
+	shaderProgram->Activate();
+	// Aquí se envía la luz como uniform al fragment shader
+	shaderProgram->SetUniform("LightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
+	shaderProgram->SetUniform("LightColour", lightColour.x, lightColour.y, lightColour.z);
+	shaderProgram->SetUniform("CameraPosition", camara->GetPosition().x, camara->GetPosition().y, camara->GetPosition().z);
+	// Se envía como uniform el nombre de la textura junto con el índice
+	// Se tienen máximo 2 texturas dibujando en un mismo objeto
+	// por lo que solo habrán dos índices
+	shaderProgram->SetUniformi("DiffuseTexture", 0);
+	shaderProgram->SetUniformi("DiffuseTexture1", 1);
+	shaderProgram->Deactivate();
+	
+	// Acomodo de la geometría2 (piso)
+	geometria2->SetScale(8.0f, 0.2f, 6.0f);
+	geometria2->MoveUp(-7.0f, true);
+	geometria2->MoveForward(-4.0f, true);
+	geometria2->Rotate(40, 0, 0, true);
+
+	
 	/*
 	// Regresa el identificador de este manager
 	// Creamos el identificador para el manager de los shaders
@@ -316,27 +302,37 @@ void GameLoop() {
 
 	shaderProgram->Activate();
 
-	// Aquí se envía la luz como uniform al fragment shader
-	shaderProgram->SetUniform("LightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
-	shaderProgram->SetUniform("LightColour", lightColour.x, lightColour.y, lightColour.z);
-	shaderProgram->SetUniform("CameraPosition", camara->GetPosition().x, camara->GetPosition().y, camara->GetPosition().z);
+	glActiveTexture(GL_TEXTURE0);
+	myTexture1.Bind();
+
+	glActiveTexture(GL_TEXTURE1);
+	myTexture2.Bind();
 
 	// Dibujado de geometría1
 	mat4 modelMatrix = geometria1->GetModelMatrix();
 	mat3 normalMatrix = transpose(inverse(mat3(geometria1->GetModelMatrix())));
+
 	shaderProgram->SetUniformMatrix("mvpMatrix", camara->GetViewProjection()*geometria1->GetModelMatrix());
 	shaderProgram->SetUniformMatrix("ModelMatrix", modelMatrix);
 	shaderProgram->SetUniformMatrix("NormalMatrix", normalMatrix);
 	mesh->Draw(GL_TRIANGLES);
 
+	glActiveTexture(GL_TEXTURE0);
+	myTexture1.Unbind();
+	glActiveTexture(GL_TEXTURE1);
+	myTexture2.Unbind();
+
 	// Dibujado de geometría2
+	glActiveTexture(GL_TEXTURE0);
+	myTexture3.Bind();
 	modelMatrix = geometria2->GetModelMatrix();
 	normalMatrix = transpose(inverse(mat3(geometria2->GetModelMatrix())));
 	shaderProgram->SetUniformMatrix("mvpMatrix", camara->GetViewProjection()*geometria2->GetModelMatrix());
 	shaderProgram->SetUniformMatrix("ModelMatrix", modelMatrix);
 	shaderProgram->SetUniformMatrix("NormalMatrix", normalMatrix);
 	mesh->Draw(GL_TRIANGLES);
-
+	glActiveTexture(GL_TEXTURE0);
+	myTexture3.Unbind();
 	shaderProgram->Deactivate();
 
 
@@ -361,7 +357,7 @@ void GameLoop() {
 
 	// Cambiando la tonalidad del fondo
 	colour += 0.01f;
-	//glClearColor(0.5 + 0.5*cos(radians(colour)), 0.5 + 0.5*sin(radians(colour)), sin(radians(colour))*cos(radians(colour)), 1.0f);
+	glClearColor(0.5 + 0.5*cos(radians(colour)), 0.5 + 0.5*sin(radians(colour)), sin(radians(colour))*cos(radians(colour)), 1.0f);
 }
 
 // Función que mueve la cámara dependiendo de la tecla presionada
@@ -446,7 +442,7 @@ int main(int argc, char* argv[]) {
 	// Ademas de solicitar el buffer de profundidad, tenemos
 	// que decirle a OpenGL que lo queremos activo
 	glEnable(GL_DEPTH_TEST);
-	//glDepthFunc(GL_LESS);
+	glDepthFunc(GL_LESS);
 	// Activamos el borrado de caras traseras.
 	// Ahora todos los triangulos que dibujemos deben estar en CCW
 	//glEnable(GL_CULL_FACE);
@@ -455,6 +451,17 @@ int main(int argc, char* argv[]) {
 	//glFrontFace(GL_CW);
 
 	cout << glGetString(GL_VERSION) << endl;
+
+	// Inicializar DevIL. Esto se debe hacer sólo una vez.
+	ilInit();
+	// Cambiar el punto de origen de las texturas. Por default, DevIL
+	// pone un punto de origen en la esquina superior izquierda.
+	// Esto es compatible con el sistema operativo, pero no con el
+	// funcionamiento de OpenGL. 
+	ilEnable(IL_ORIGIN_SET);
+	// Configurar el punto de origen de las texturas en la esquina
+	// inferior izquierda
+	ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
 
 	// Configuración inicial de nuestro programa
 	Initialise();
