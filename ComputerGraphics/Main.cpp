@@ -17,6 +17,7 @@ Autor: A01169073 Aldo A. Reyna Gómez
 #include "Transform.h"
 #include "Camera.h"
 #include "Texture2D.h"
+#include "Depthbuffer.h"
 
 using namespace std;
 using namespace glm;
@@ -24,14 +25,25 @@ using namespace glm;
 // Identificador del manager al que vamos a asociar todos los VBOs que tenga nuestra geometría
 unique_ptr<Mesh> mesh(new Mesh);
 // Identificador del manager de los shaders (shaderProgram)
-unique_ptr<ShaderProgram> shaderProgram(new ShaderProgram);
+// El que tiene una sombra
+unique_ptr<ShaderProgram> shaderProgram1(new ShaderProgram);
+// El que tiene dos sombras
+unique_ptr<ShaderProgram> shaderProgram2(new ShaderProgram);
+// El que no sirve para nada
+unique_ptr<ShaderProgram> shaderProgram3(new ShaderProgram);
+
 unique_ptr<Transform> geometria1(new Transform); // Geometría 1: cubo rotando
 unique_ptr<Transform> geometria2(new Transform); // Geometría 2: cubo piso estático
-unique_ptr<Camera> camara(new Camera);
+
+unique_ptr<Camera> camara1(new Camera); // Cámara donde se encuentra el observador
+unique_ptr<Camera> camara2(new Camera); // Cámara donde se ubica la fuente de luz
+
 Texture2D myTexture1;
 Texture2D myTexture2;
 Texture2D myTexture3;
 //unique_ptr<Texture2D> myTexture3(new Texture2D);
+
+unique_ptr<Depthbuffer> myFramebuffer(new Depthbuffer);
 
 // Identificador del manager al que vamos a asociar todos los VBOs que tenga nuestra geometría
 GLuint vao;
@@ -162,6 +174,7 @@ void Initialise() {
 	mesh->SetTexCoordAttribute(textures, GL_STATIC_DRAW, 3);
 	mesh->SetIndices(indices, GL_STATIC_DRAW);
 
+
 	/*/
 	// Queremos gengerar 1 manager
 	glGenVertexArrays(1, &vao);
@@ -224,42 +237,82 @@ void Initialise() {
 	glShaderSource(fragmentShaderHandle, 1, &fragmentSource_c, nullptr);
 	glCompileShader(fragmentShaderHandle);*/
 
-	shaderProgram->CreateProgram();
-	shaderProgram->AttachShader("DefaultTexture.vert", GL_VERTEX_SHADER);
-	shaderProgram->AttachShader("DefaultTexture.frag", GL_FRAGMENT_SHADER);
-	shaderProgram->SetAttribute(0, "VertexPosition");
-	shaderProgram->SetAttribute(1, "VertexColour");
-	shaderProgram->SetAttribute(2, "VertexNormal");
-	shaderProgram->SetAttribute(3, "VertexTexCoord");
-
 	// Creando-cargando las texturas que se dibujarán
 	myTexture1.LoadTexture("box.jpg");
 	myTexture2.LoadTexture("pig.jpg");
 	myTexture3.LoadTexture("tiled.jpg");
 
-	shaderProgram->LinkProgram();
 
 	// Hacer la cámara hacia el observador para una mejor vista
-	camara->MoveForward(24.0f);
+	camara1->MoveForward(30.0f);
+	camara1->MoveUp(6.0);
+	camara1->Pitch(-30);
 
-	shaderProgram->Activate();
+	// Creación y activación del primer shader program (Solo 1 sombra)
+	shaderProgram1->CreateProgram();
+	shaderProgram1->AttachShader("Shadow.vert", GL_VERTEX_SHADER);
+	shaderProgram1->AttachShader("Shadow.frag", GL_FRAGMENT_SHADER);
+	shaderProgram1->SetAttribute(0, "VertexPosition");
+	shaderProgram1->SetAttribute(1, "VertexColour");
+	shaderProgram1->SetAttribute(2, "VertexNormal");
+	shaderProgram1->SetAttribute(3, "VertexTexCoord");
+	shaderProgram1->LinkProgram();
+	shaderProgram1->Activate();
 	// Aquí se envía la luz como uniform al fragment shader
-	shaderProgram->SetUniform("LightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
-	shaderProgram->SetUniform("LightColour", lightColour.x, lightColour.y, lightColour.z);
-	shaderProgram->SetUniform("CameraPosition", camara->GetPosition().x, camara->GetPosition().y, camara->GetPosition().z);
+	shaderProgram1->SetUniform("LightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
+	shaderProgram1->SetUniform("LightColour", lightColour.x, lightColour.y, lightColour.z);
+	shaderProgram1->SetUniform("CameraPosition", camara1->GetPosition().x, camara1->GetPosition().y, camara1->GetPosition().z);
 	// Se envía como uniform el nombre de la textura junto con el índice
 	// Se tienen máximo 2 texturas dibujando en un mismo objeto
 	// por lo que solo habrán dos índices
-	shaderProgram->SetUniformi("DiffuseTexture", 0);
-	shaderProgram->SetUniformi("DiffuseTexture1", 1);
-	shaderProgram->Deactivate();
+	shaderProgram1->SetUniformi("DiffuseTexture", 0);
+	shaderProgram1->SetUniformi("DiffuseTexture1", 1);
+	shaderProgram1->SetUniformi("ShadowMap", 2);
+	shaderProgram1->Deactivate();
+
+	// Creación y activación del segundo shader program (2 sombras)
+	shaderProgram2->CreateProgram();
+	shaderProgram2->AttachShader("Shadow2.vert", GL_VERTEX_SHADER);
+	shaderProgram2->AttachShader("Shadow2.frag", GL_FRAGMENT_SHADER);
+	shaderProgram2->SetAttribute(0, "VertexPosition");
+	shaderProgram2->SetAttribute(1, "VertexColour");
+	shaderProgram2->SetAttribute(2, "VertexNormal");
+	shaderProgram2->SetAttribute(3, "VertexTexCoord");
+	shaderProgram2->LinkProgram();
+	shaderProgram2->Activate();
+	shaderProgram2->SetUniform("LightPosition", lightPosition.x, lightPosition.y, lightPosition.z);
+	shaderProgram2->SetUniform("LightColour", lightColour.x, lightColour.y, lightColour.z);
+	shaderProgram2->SetUniform("CameraPosition", camara1->GetPosition().x, camara1->GetPosition().y, camara1->GetPosition().z);
+	shaderProgram2->SetUniformi("DiffuseTexture", 0);
+	shaderProgram2->SetUniformi("DiffuseTexture1", 1);
+	shaderProgram2->SetUniformi("ShadowMap", 2);
+	shaderProgram2->Deactivate();
+
+	// Creación y activación del tercer shader program (el que no sirve para nada)
+	shaderProgram3->CreateProgram();
+	shaderProgram3->AttachShader("Depth.vert", GL_VERTEX_SHADER);
+	shaderProgram3->AttachShader("Depth.frag", GL_FRAGMENT_SHADER);
+	shaderProgram3->SetAttribute(0, "VertexPosition");
+	shaderProgram3->LinkProgram();
+
+
+	// --------------- Creación y configuración del framebuffer con 2048 px ------------------
+	myFramebuffer->Create(2048);
+
+	// --------------- Configuración de las cámaras ------------------
+
+
+	// Se acomoda la segunda cámara en la posición de la luz y debe ser ortográfica
+	// para que los rayos sean infinitamente lejos y con el mismo ángulo (?)
+	camara2->SetPosition(lightPosition.x, lightPosition.y, lightPosition.z);
+	camara2->SetOrthographic(30.0, 1.0);
+	camara2->Pitch(-45);	
 	
 	// Acomodo de la geometría2 (piso)
 	geometria2->SetScale(8.0f, 0.2f, 6.0f);
 	geometria2->MoveUp(-7.0f, true);
-	geometria2->MoveForward(-4.0f, true);
-	geometria2->Rotate(40, 0, 0, true);
-
+	geometria2->MoveForward(0.0f, true);
+	geometria2->Rotate(0, 0, 0, true);
 	
 	/*
 	// Regresa el identificador de este manager
@@ -279,62 +332,83 @@ void Initialise() {
 
 void GameLoop() {
 	// Siempre hacerlo al inicio del frame!
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	/*
-	// Geometría1 rota en sus tres ejes coordenados
-	geometria1->Rotate(0.03f, 0.015f, 0.03f, false);
-	// Geometría1 sigue una trayectoria circular en el plano XY
-	geometria1->SetPosition(5 * cos(radians(pos)), 5 * sin(radians(pos)), 0);
-	pos += deltaCirculo;
 
-	// Geometría2 rota en sus tres ejes coordenados, pero en sentido contrario
-	geometria2->Rotate(-0.03f, -0.015f, -0.03f, false);
+	geometria1->Rotate(0.04f, 0.04f, 0.04f, false);
 
-	// Incrementar la escala de la geometría2 en el rango de 0.25 -> 1.0
-	geometria2->SetScale(0.5f + inc, 0.5f + inc, 0.5f + inc);
-	if (geometria2->GetScale().x <= 0.25f || geometria2->GetScale().x >= 1.0f) {
-		deltaEscala *= -1.0f;
-	}
-	inc += deltaEscala;*/
+	// ---------------------------------- 1er Render ----------------------------------
 
-	geometria1->Rotate(0.03f, 0.03f, 0.01f, false);
+	myFramebuffer->Bind();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	shaderProgram->Activate();
+	shaderProgram3->Activate();
 
-	glActiveTexture(GL_TEXTURE0);
-	myTexture1.Bind();
-
-	glActiveTexture(GL_TEXTURE1);
-	myTexture2.Bind();
-
-	// Dibujado de geometría1
-	mat4 modelMatrix = geometria1->GetModelMatrix();
-	mat3 normalMatrix = transpose(inverse(mat3(geometria1->GetModelMatrix())));
-
-	shaderProgram->SetUniformMatrix("mvpMatrix", camara->GetViewProjection()*geometria1->GetModelMatrix());
-	shaderProgram->SetUniformMatrix("ModelMatrix", modelMatrix);
-	shaderProgram->SetUniformMatrix("NormalMatrix", normalMatrix);
+	// Geometría 1
+	shaderProgram3->SetUniformMatrix("mvpMatrix", camara2->GetViewProjection()*geometria1->GetModelMatrix());
 	mesh->Draw(GL_TRIANGLES);
 
+	// Geometría 2
+	shaderProgram3->SetUniformMatrix("mvpMatrix", camara2->GetViewProjection()*geometria2->GetModelMatrix());
+	mesh->Draw(GL_TRIANGLES);
+	
+	shaderProgram3->Deactivate();
+
+	myFramebuffer->Unbind();
+	glViewport(0, 0, 400, 400);
+	//glViewport(0, 0, glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
+
+	// ---------------------------------- 2do Render ----------------------------------
+	
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	shaderProgram2->Activate();
+	// Geometría 1
+	glActiveTexture(GL_TEXTURE0);
+	myTexture1.Bind();
+	glActiveTexture(GL_TEXTURE1);
+	myTexture2.Bind();
+	glActiveTexture(GL_TEXTURE2);
+	myFramebuffer->BindDepthMap();
+
+	mat4 modelMatrix = geometria1->GetModelMatrix();
+	mat3 normalMatrix = transpose(inverse(mat3(geometria1->GetModelMatrix())));
+	shaderProgram2->SetUniformMatrix("mvpMatrix", camara1->GetViewProjection()*geometria1->GetModelMatrix());
+	shaderProgram2->SetUniformMatrix("ModelMatrix", modelMatrix);
+	shaderProgram2->SetUniformMatrix("NormalMatrix", normalMatrix);
+	shaderProgram2->SetUniformMatrix("LightVPMatrix", camara2->GetViewProjection());
+	mesh->Draw(GL_TRIANGLES);
+	
 	glActiveTexture(GL_TEXTURE0);
 	myTexture1.Unbind();
 	glActiveTexture(GL_TEXTURE1);
 	myTexture2.Unbind();
+	glActiveTexture(GL_TEXTURE2);
+	myFramebuffer->UnbindDepthMap();
 
-	// Dibujado de geometría2
+	shaderProgram2->Deactivate();
+
+
+	shaderProgram1->Activate();
+	// Geometría 2
 	glActiveTexture(GL_TEXTURE0);
 	myTexture3.Bind();
+	glActiveTexture(GL_TEXTURE2);
+	myFramebuffer->BindDepthMap();
+
 	modelMatrix = geometria2->GetModelMatrix();
 	normalMatrix = transpose(inverse(mat3(geometria2->GetModelMatrix())));
-	shaderProgram->SetUniformMatrix("mvpMatrix", camara->GetViewProjection()*geometria2->GetModelMatrix());
-	shaderProgram->SetUniformMatrix("ModelMatrix", modelMatrix);
-	shaderProgram->SetUniformMatrix("NormalMatrix", normalMatrix);
+	shaderProgram1->SetUniformMatrix("mvpMatrix", camara1->GetViewProjection()*geometria2->GetModelMatrix());
+	shaderProgram1->SetUniformMatrix("ModelMatrix", modelMatrix);
+	shaderProgram1->SetUniformMatrix("NormalMatrix", normalMatrix);
+	shaderProgram1->SetUniformMatrix("LightVPMatrix", camara2->GetViewProjection());
 	mesh->Draw(GL_TRIANGLES);
+
 	glActiveTexture(GL_TEXTURE0);
 	myTexture3.Unbind();
-	shaderProgram->Deactivate();
+	glActiveTexture(GL_TEXTURE2);
+	myFramebuffer->UnbindDepthMap();
 
+	shaderProgram1->Deactivate();
+	
 
 	/*
 	// Activamos el vertexShader y el fragmentShader utilizando el manager
@@ -363,24 +437,24 @@ void GameLoop() {
 // Función que mueve la cámara dependiendo de la tecla presionada
 void Keyboard(unsigned char key, int x, int y) {
 	if (key == 'w')
-		camara->MoveForward(0.1f, false);
+		camara2->MoveForward(0.1f, false);
 	if (key == 's')
-		camara->MoveForward(-0.1f, false);
+		camara2->MoveForward(-0.1f, false);
 	if (key == 'd')
-		camara->MoveRight(0.1f, false);
+		camara2->MoveRight(0.1f, false);
 	if (key == 'a')
-		camara->MoveRight(-0.1f, false);
+		camara2->MoveRight(-0.1f, false);
 }
 
 void SpecialKeys(int key, int x, int y) {
 	if (key == GLUT_KEY_UP)
-		camara->MoveForward(0.1f, false);
+		camara2->MoveForward(0.1f, false);
 	if (key == GLUT_KEY_DOWN)
-		camara->MoveForward(-0.1f, false);
+		camara2->MoveForward(-0.1f, false);
 	if (key == GLUT_KEY_RIGHT)
-		camara->Rotate(0.0f, 4.0f, 0.0f, true);
+		camara2->Rotate(0.0f, 4.0f, 0.0f, true);
 	if (key == GLUT_KEY_LEFT)
-		camara->Rotate(0.0f, -4.0f, 0.0f, true);
+		camara2->Rotate(0.0f, -4.0f, 0.0f, true);
 }
 
 void Idle() {
@@ -442,7 +516,7 @@ int main(int argc, char* argv[]) {
 	// Ademas de solicitar el buffer de profundidad, tenemos
 	// que decirle a OpenGL que lo queremos activo
 	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
+	//glDepthFunc(GL_LESS);
 	// Activamos el borrado de caras traseras.
 	// Ahora todos los triangulos que dibujemos deben estar en CCW
 	//glEnable(GL_CULL_FACE);
@@ -462,6 +536,9 @@ int main(int argc, char* argv[]) {
 	// Configurar el punto de origen de las texturas en la esquina
 	// inferior izquierda
 	ilOriginFunc(IL_ORIGIN_LOWER_LEFT);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Configuración inicial de nuestro programa
 	Initialise();

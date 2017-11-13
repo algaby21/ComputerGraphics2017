@@ -6,6 +6,7 @@ Autor: A01169073 Aldo A. Reyna Gómez
 
 #include "Shader.h"
 #include "InputFile.h"
+#include <iostream>
 
 Shader::Shader() {
 	// Inicializa los valores por default de las variables.
@@ -31,6 +32,40 @@ void Shader::CreateShader(string path, GLenum type) {
 	// Continuar leyendo hasta que encuentre un nullptr.
 	glShaderSource(_shaderHandle, 1, &source_c, nullptr);
 	glCompileShader(_shaderHandle);
+
+	// Get compile status
+	GLint shaderCompileSuccess = 0;
+	glGetShaderiv(_shaderHandle, GL_COMPILE_STATUS, &shaderCompileSuccess);
+	if (shaderCompileSuccess == GL_FALSE)
+	{
+		// Get compile log length
+		GLint logLength = 0;
+		glGetShaderiv(_shaderHandle, GL_INFO_LOG_LENGTH, &logLength);
+		if (logLength > 0)
+		{
+
+			// Allocate memory for compile log
+			std::vector<GLchar> compileLog(logLength);
+
+			// Get compile log
+			glGetShaderInfoLog(_shaderHandle, logLength, &logLength, &compileLog[0]);
+
+			// Print compile log
+			for (int i = 0; i<logLength; i++)
+				cout << compileLog[i];
+			cout << endl;
+		}
+		cout << "Shader " << path << " did not compiled." << endl;
+
+		//We don't need the shader anymore.
+		glDeleteShader(_shaderHandle);
+
+		return;
+	}
+
+	cout << "Shader " << path << " compiled successfully" << endl;
+
+
 }
 
 GLuint Shader::GetHandle() {

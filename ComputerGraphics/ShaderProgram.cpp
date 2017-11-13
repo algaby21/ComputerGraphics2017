@@ -8,6 +8,7 @@ Autor: A01169073 Aldo A. Reyna Gómez
 #include "Shader.h"
 #include <glm/gtc/type_ptr.hpp>
 #include <memory>
+#include <iostream>
 using namespace std;
 
 ShaderProgram::ShaderProgram() {
@@ -44,6 +45,36 @@ void ShaderProgram::LinkProgram(){
 		glAttachShader(_programHandle, _attachedShaders[i].get()->GetHandle());
 	}*/
 	glLinkProgram(_programHandle);
+
+	// Get status
+	GLint linkSuccess = 0;
+	glGetProgramiv(_programHandle, GL_LINK_STATUS, &linkSuccess);
+	if (linkSuccess == GL_FALSE)	{
+		// Get link log length
+		GLint logLength = 0;
+		glGetProgramiv(_programHandle, GL_INFO_LOG_LENGTH, &logLength);
+
+		if (logLength > 0)		{
+			// Allocate memory for link log
+			std::vector<GLchar> linkLog(logLength);
+
+			// Get link log
+			glGetProgramInfoLog(_programHandle, logLength, &logLength, &linkLog[0]);
+
+			// Print link log
+			for (size_t i = 0; i < linkLog.size(); i++)
+				cout << linkLog[i];
+			cout << std::endl;
+		}
+		cout << "Shaders could not be linked." << std::endl;
+
+		// Delete and detach shaders; delte program handle
+		DeleteProgram();
+
+		return;
+	}
+
+	cout << "Build succeeded... " << endl;
 	DeleteAndDetachShaders();
 }
 
