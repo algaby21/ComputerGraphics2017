@@ -23,7 +23,8 @@ using namespace std;
 using namespace glm;
 
 // Identificador del manager al que vamos a asociar todos los VBOs que tenga nuestra geometría
-unique_ptr<Mesh> mesh(new Mesh);
+unique_ptr<Mesh> meshPalma(new Mesh);
+unique_ptr<Mesh> meshFingers(new Mesh);
 // Identificador del manager de los shaders (shaderProgram)
 // El que tiene una sombra
 unique_ptr<ShaderProgram> shaderProgram1(new ShaderProgram);
@@ -34,6 +35,14 @@ unique_ptr<ShaderProgram> shaderProgram3(new ShaderProgram);
 
 unique_ptr<Transform> geometria1(new Transform); // Geometría 1: cubo rotando
 unique_ptr<Transform> geometria2(new Transform); // Geometría 2: cubo piso estático
+unique_ptr<Transform> geometria3(new Transform); 
+unique_ptr<Transform> geometria4(new Transform);
+unique_ptr<Transform> geometria5(new Transform);
+unique_ptr<Transform> geometria6(new Transform);
+unique_ptr<Transform> geometria7(new Transform);
+unique_ptr<Transform> geometria8(new Transform);
+unique_ptr<Transform> geometria9(new Transform);
+unique_ptr<Transform> geometria10(new Transform);
 
 unique_ptr<Camera> camara1(new Camera); // Cámara donde se encuentra el observador
 unique_ptr<Camera> camara2(new Camera); // Cámara donde se ubica la fuente de luz
@@ -53,18 +62,28 @@ GLuint vao;
 
 float pos = 0.0; // Índice para la trayectoria del círculo de la geometría1
 float deltaCirculo = 0.01f;
-float inc = 0.0; // Incremento en la escala de la geometría2
-float deltaEscala = 0.00005f;
+float inc = 0.0;
+float inc2 = 0.0;
+float inc3 = 0.0;
+float deltaMovimiento = 0.00f;
+float deltaMovimiento2 = 0.00f;
+float deltaMovimiento3 = 0.00f;
 double colour = 0.0; // Color de fondo
 vec3 lightColour = vec3(1.0f, 1.0f, 1.0f);
 vec3 lightPosition = vec3(-5.0f, 5.0f, 5.0f);
 
+void ReshapeWindow(int width, int height) {
+	// Para configurar un uniform, tenemos que decirle a OpenGL que vamos a utilizar el shader program (manager)
+	glViewport(0, 0, width, height);
+	//shProgram.SetUniform("Resolution", width, height);
+}
+
 
 void Initialise() {
-	vector<vec3> positions;
-	vector<vec3> colors;
-	vector<vec3> normals;
-	vector<vec2> textures;
+	vector<vec3> positions1;
+	vector<vec3> colors1;
+	vector<vec3> normals1;
+	vector<vec2> textures1;
 
 	/*float arr[6] = { 18.f, 306.f, 234.f, 162.f, 90.f, 18.f };
 	for (int i = 0; i < 6; i++) {
@@ -74,89 +93,93 @@ void Initialise() {
 	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
 	}*/
 
+	float scaleX = 1.5f;
+	float scaleY = 1.5f;
+	float scaleZ = 0.1f;
+
 	// Cara frontal
-	positions.push_back(vec3(-3.0f, -3.0f, 3.0f));
-	positions.push_back(vec3(3.0f, -3.0f, 3.0f));
-	positions.push_back(vec3(3.0f, 3.0f, 3.0f));
-	positions.push_back(vec3(-3.0f, 3.0f, 3.0f));
-	normals.push_back(vec3(0.0f, 0.0f, 1.0f));
-	normals.push_back(vec3(0.0f, 0.0f, 1.0f));
-	normals.push_back(vec3(0.0f, 0.0f, 1.0f));
-	normals.push_back(vec3(0.0f, 0.0f, 1.0f));
-	textures.push_back(vec2(0.0f, 0.0f));
-	textures.push_back(vec2(1.0f, 0.0f));
-	textures.push_back(vec2(1.0f, 1.0f));
-	textures.push_back(vec2(0.0f, 1.0f));
+	positions1.push_back(vec3(-3.0f*scaleX, -3.0f*scaleY, 3.0f*scaleZ));
+	positions1.push_back(vec3(3.0f*scaleX, -3.0f*scaleY, 3.0f*scaleZ));
+	positions1.push_back(vec3(3.0f*scaleX, 3.0f*scaleY, 3.0f*scaleZ));
+	positions1.push_back(vec3(-3.0f*scaleX, 3.0f*scaleY, 3.0f*scaleZ));
+	normals1.push_back(vec3(0.0f, 0.0f, 1.0f));
+	normals1.push_back(vec3(0.0f, 0.0f, 1.0f));
+	normals1.push_back(vec3(0.0f, 0.0f, 1.0f));
+	normals1.push_back(vec3(0.0f, 0.0f, 1.0f));
+	textures1.push_back(vec2(0.0f, 0.0f));
+	textures1.push_back(vec2(1.0f, 0.0f));
+	textures1.push_back(vec2(1.0f, 1.0f));
+	textures1.push_back(vec2(0.0f, 1.0f));
 
 	// Cara lateral derecha
-	positions.push_back(vec3(3.0f, 3.0f, 3.0f));
-	positions.push_back(vec3(3.0f, 3.0f, -3.0f));
-	positions.push_back(vec3(3.0f, -3.0f, -3.0f));
-	positions.push_back(vec3(3.0f, -3.0f, 3.0f));
-	normals.push_back(vec3(1.0f, 0.0f, 0.0f));
-	normals.push_back(vec3(1.0f, 0.0f, 0.0f));
-	normals.push_back(vec3(1.0f, 0.0f, 0.0f));
-	normals.push_back(vec3(1.0f, 0.0f, 0.0f));
-	textures.push_back(vec2(0.0f, 0.0f));
-	textures.push_back(vec2(1.0f, 0.0f));
-	textures.push_back(vec2(1.0f, 1.0f));
-	textures.push_back(vec2(0.0f, 1.0f));
+	positions1.push_back(vec3(3.0f*scaleX, 3.0f*scaleY, 3.0f*scaleZ));
+	positions1.push_back(vec3(3.0f*scaleX, 3.0f*scaleY, -3.0f*scaleZ));
+	positions1.push_back(vec3(3.0f*scaleX, -3.0f*scaleY, -3.0f*scaleZ));
+	positions1.push_back(vec3(3.0f*scaleX, -3.0f*scaleY, 3.0f*scaleZ));
+	normals1.push_back(vec3(1.0f, 0.0f, 0.0f));
+	normals1.push_back(vec3(1.0f, 0.0f, 0.0f));
+	normals1.push_back(vec3(1.0f, 0.0f, 0.0f));
+	normals1.push_back(vec3(1.0f, 0.0f, 0.0f));
+	textures1.push_back(vec2(0.0f, 0.0f));
+	textures1.push_back(vec2(1.0f, 0.0f));
+	textures1.push_back(vec2(1.0f, 1.0f));
+	textures1.push_back(vec2(0.0f, 1.0f));
 
 	// Cara trasera
-	positions.push_back(vec3(-3.0f, -3.0f, -3.0f));
-	positions.push_back(vec3(3.0f, -3.0f, -3.0f));
-	positions.push_back(vec3(3.0f, 3.0f, -3.0f));
-	positions.push_back(vec3(-3.0f, 3.0f, -3.0f));
-	normals.push_back(vec3(0.0f, 0.0f, -1.0f));
-	normals.push_back(vec3(0.0f, 0.0f, -1.0f));
-	normals.push_back(vec3(0.0f, 0.0f, -1.0f));
-	normals.push_back(vec3(0.0f, 0.0f, -1.0f));
-	textures.push_back(vec2(0.0f, 0.0f));
-	textures.push_back(vec2(1.0f, 0.0f));
-	textures.push_back(vec2(1.0f, 1.0f));
-	textures.push_back(vec2(0.0f, 1.0f));
+	positions1.push_back(vec3(-3.0f*scaleX, -3.0f*scaleY, -3.0f*scaleZ));
+	positions1.push_back(vec3(3.0f*scaleX, -3.0f*scaleY, -3.0f*scaleZ));
+	positions1.push_back(vec3(3.0f*scaleX, 3.0f*scaleY, -3.0f*scaleZ));
+	positions1.push_back(vec3(-3.0f*scaleX, 3.0f*scaleY, -3.0f*scaleZ));
+	normals1.push_back(vec3(0.0f, 0.0f, -1.0f));
+	normals1.push_back(vec3(0.0f, 0.0f, -1.0f));
+	normals1.push_back(vec3(0.0f, 0.0f, -1.0f));
+	normals1.push_back(vec3(0.0f, 0.0f, -1.0f));
+	textures1.push_back(vec2(0.0f, 0.0f));
+	textures1.push_back(vec2(1.0f, 0.0f));
+	textures1.push_back(vec2(1.0f, 1.0f));
+	textures1.push_back(vec2(0.0f, 1.0f));
 
 	// Cara lateral izquierda
-	positions.push_back(vec3(-3.0f, -3.0f, -3.0f));
-	positions.push_back(vec3(-3.0f, -3.0f, 3.0f));
-	positions.push_back(vec3(-3.0f, 3.0f, 3.0f));
-	positions.push_back(vec3(-3.0f, 3.0f, -3.0f));
-	normals.push_back(vec3(-1.0f, 0.0f, 0.0f));
-	normals.push_back(vec3(-1.0f, 0.0f, 0.0f));
-	normals.push_back(vec3(-1.0f, 0.0f, 0.0f));
-	normals.push_back(vec3(-1.0f, 0.0f, 0.0f));
-	textures.push_back(vec2(0.0f, 0.0f));
-	textures.push_back(vec2(1.0f, 0.0f));
-	textures.push_back(vec2(1.0f, 1.0f));
-	textures.push_back(vec2(0.0f, 1.0f));
+	positions1.push_back(vec3(-3.0f*scaleX, -3.0f*scaleY, -3.0f*scaleZ));
+	positions1.push_back(vec3(-3.0f*scaleX, -3.0f*scaleY, 3.0f*scaleZ));
+	positions1.push_back(vec3(-3.0f*scaleX, 3.0f*scaleY, 3.0f*scaleZ));
+	positions1.push_back(vec3(-3.0f*scaleX, 3.0f*scaleY, -3.0f*scaleZ));
+	normals1.push_back(vec3(-1.0f, 0.0f, 0.0f));
+	normals1.push_back(vec3(-1.0f, 0.0f, 0.0f));
+	normals1.push_back(vec3(-1.0f, 0.0f, 0.0f));
+	normals1.push_back(vec3(-1.0f, 0.0f, 0.0f));
+	textures1.push_back(vec2(0.0f, 0.0f));
+	textures1.push_back(vec2(1.0f, 0.0f));
+	textures1.push_back(vec2(1.0f, 1.0f));
+	textures1.push_back(vec2(0.0f, 1.0f));
 
 	// Cara superior
-	positions.push_back(vec3(3.0f, 3.0f, 3.0f));
-	positions.push_back(vec3(-3.0f, 3.0f, 3.0f));
-	positions.push_back(vec3(-3.0f, 3.0f, -3.0f));
-	positions.push_back(vec3(3.0f, 3.0f, -3.0f));
-	normals.push_back(vec3(0.0f, 1.0f, 0.0f));
-	normals.push_back(vec3(0.0f, 1.0f, 0.0f));
-	normals.push_back(vec3(0.0f, 1.0f, 0.0f));
-	normals.push_back(vec3(0.0f, 1.0f, 0.0f));
-	textures.push_back(vec2(0.0f, 0.0f));
-	textures.push_back(vec2(1.0f, 0.0f));
-	textures.push_back(vec2(1.0f, 1.0f));
-	textures.push_back(vec2(0.0f, 1.0f));
+	positions1.push_back(vec3(3.0f*scaleX, 3.0f*scaleY, 3.0f*scaleZ));
+	positions1.push_back(vec3(-3.0f*scaleX, 3.0f*scaleY, 3.0f*scaleZ));
+	positions1.push_back(vec3(-3.0f*scaleX, 3.0f*scaleY, -3.0f*scaleZ));
+	positions1.push_back(vec3(3.0f*scaleX, 3.0f*scaleY, -3.0f*scaleZ));
+	normals1.push_back(vec3(0.0f, 1.0f, 0.0f));
+	normals1.push_back(vec3(0.0f, 1.0f, 0.0f));
+	normals1.push_back(vec3(0.0f, 1.0f, 0.0f));
+	normals1.push_back(vec3(0.0f, 1.0f, 0.0f));
+	textures1.push_back(vec2(0.0f, 0.0f));
+	textures1.push_back(vec2(1.0f, 0.0f));
+	textures1.push_back(vec2(1.0f, 1.0f));
+	textures1.push_back(vec2(0.0f, 1.0f));
 
 	// Cara inferior
-	positions.push_back(vec3(-3.0f, -3.0f, -3.0f));
-	positions.push_back(vec3(3.0f, -3.0f, -3.0f));
-	positions.push_back(vec3(3.0f, -3.0f, 3.0f));
-	positions.push_back(vec3(-3.0f, -3.0f, 3.0f));
-	normals.push_back(vec3(0.0f, -1.0f, 0.0f));
-	normals.push_back(vec3(0.0f, -1.0f, 0.0f));
-	normals.push_back(vec3(0.0f, -1.0f, 0.0f));
-	normals.push_back(vec3(0.0f, -1.0f, 0.0f));
-	textures.push_back(vec2(0.0f, 0.0f));
-	textures.push_back(vec2(1.0f, 0.0f));
-	textures.push_back(vec2(1.0f, 1.0f));
-	textures.push_back(vec2(0.0f, 1.0f));
+	positions1.push_back(vec3(-3.0f*scaleX, -3.0f*scaleY, -3.0f*scaleZ));
+	positions1.push_back(vec3(3.0f*scaleX, -3.0f*scaleY, -3.0f*scaleZ));
+	positions1.push_back(vec3(3.0f*scaleX, -3.0f*scaleY, 3.0f*scaleZ));
+	positions1.push_back(vec3(-3.0f*scaleX, -3.0f*scaleY, 3.0f*scaleZ));
+	normals1.push_back(vec3(0.0f, -1.0f, 0.0f));
+	normals1.push_back(vec3(0.0f, -1.0f, 0.0f));
+	normals1.push_back(vec3(0.0f, -1.0f, 0.0f));
+	normals1.push_back(vec3(0.0f, -1.0f, 0.0f));
+	textures1.push_back(vec2(0.0f, 0.0f));
+	textures1.push_back(vec2(1.0f, 0.0f));
+	textures1.push_back(vec2(1.0f, 1.0f));
+	textures1.push_back(vec2(0.0f, 1.0f));
 
 	vector<unsigned int> indices = {
 		0, 1, 2, 0, 2, 3, // Frontal
@@ -167,15 +190,124 @@ void Initialise() {
 		20, 21, 22, 20, 22, 23 // Inferior
 	};
 
-	mesh->CreateMesh(positions.size());
-	mesh->SetPositionAttribute(positions, GL_STATIC_DRAW, 0);
-	mesh->SetColorAttribute(colors, GL_STATIC_DRAW, 1);
-	mesh->SetNormalAttribute(normals, GL_STATIC_DRAW, 2);
-	mesh->SetTexCoordAttribute(textures, GL_STATIC_DRAW, 3);
-	mesh->SetIndices(indices, GL_STATIC_DRAW);
+	meshPalma->CreateMesh(positions1.size());
+	meshPalma->SetPositionAttribute(positions1, GL_STATIC_DRAW, 0);
+	meshPalma->SetColorAttribute(colors1, GL_STATIC_DRAW, 1);
+	meshPalma->SetNormalAttribute(normals1, GL_STATIC_DRAW, 2);
+	meshPalma->SetTexCoordAttribute(textures1, GL_STATIC_DRAW, 3);
+	meshPalma->SetIndices(indices, GL_STATIC_DRAW);
 
 
-	/*/
+	vector<vec3> positions2;
+	vector<vec3> colors2;
+	vector<vec3> normals2;
+	vector<vec2> textures2;
+
+	/*float arr[6] = { 18.f, 306.f, 234.f, 162.f, 90.f, 18.f };
+	for (int i = 0; i < 6; i++) {
+	positions.push_back(vec2(cos(radians(arr[i])), sin(radians(arr[i]))));
+	colors.push_back(vec3(0.0f, 0.0f, 1.0f));
+	positions.push_back(vec2(0.5*cos(radians(arr[i])), 0.5*sin(radians(arr[i]))));
+	colors.push_back(vec3(1.0f, 0.0f, 0.0f));
+	}*/
+
+	scaleX = 0.4f;
+	scaleY = 0.7f;
+	scaleZ = 0.1f;
+
+	// Cara frontal
+	positions2.push_back(vec3(-3.0f*scaleX, -3.0f*scaleY, 3.0f*scaleZ));
+	positions2.push_back(vec3(3.0f*scaleX, -3.0f*scaleY, 3.0f*scaleZ));
+	positions2.push_back(vec3(3.0f*scaleX, 3.0f*scaleY, 3.0f*scaleZ));
+	positions2.push_back(vec3(-3.0f*scaleX, 3.0f*scaleY, 3.0f*scaleZ));
+	normals2.push_back(vec3(0.0f, 0.0f, 1.0f));
+	normals2.push_back(vec3(0.0f, 0.0f, 1.0f));
+	normals2.push_back(vec3(0.0f, 0.0f, 1.0f));
+	normals2.push_back(vec3(0.0f, 0.0f, 1.0f));
+	textures2.push_back(vec2(0.0f, 0.0f));
+	textures2.push_back(vec2(1.0f, 0.0f));
+	textures2.push_back(vec2(1.0f, 1.0f));
+	textures2.push_back(vec2(0.0f, 1.0f));
+
+	// Cara lateral derecha
+	positions2.push_back(vec3(3.0f*scaleX, 3.0f*scaleY, 3.0f*scaleZ));
+	positions2.push_back(vec3(3.0f*scaleX, 3.0f*scaleY, -3.0f*scaleZ));
+	positions2.push_back(vec3(3.0f*scaleX, -3.0f*scaleY, -3.0f*scaleZ));
+	positions2.push_back(vec3(3.0f*scaleX, -3.0f*scaleY, 3.0f*scaleZ));
+	normals2.push_back(vec3(1.0f, 0.0f, 0.0f));
+	normals2.push_back(vec3(1.0f, 0.0f, 0.0f));
+	normals2.push_back(vec3(1.0f, 0.0f, 0.0f));
+	normals2.push_back(vec3(1.0f, 0.0f, 0.0f));
+	textures2.push_back(vec2(0.0f, 0.0f));
+	textures2.push_back(vec2(1.0f, 0.0f));
+	textures2.push_back(vec2(1.0f, 1.0f));
+	textures2.push_back(vec2(0.0f, 1.0f));
+
+	// Cara trasera
+	positions2.push_back(vec3(-3.0f*scaleX, -3.0f*scaleY, -3.0f*scaleZ));
+	positions2.push_back(vec3(3.0f*scaleX, -3.0f*scaleY, -3.0f*scaleZ));
+	positions2.push_back(vec3(3.0f*scaleX, 3.0f*scaleY, -3.0f*scaleZ));
+	positions2.push_back(vec3(-3.0f*scaleX, 3.0f*scaleY, -3.0f*scaleZ));
+	normals2.push_back(vec3(0.0f, 0.0f, -1.0f));
+	normals2.push_back(vec3(0.0f, 0.0f, -1.0f));
+	normals2.push_back(vec3(0.0f, 0.0f, -1.0f));
+	normals2.push_back(vec3(0.0f, 0.0f, -1.0f));
+	textures2.push_back(vec2(0.0f, 0.0f));
+	textures2.push_back(vec2(1.0f, 0.0f));
+	textures2.push_back(vec2(1.0f, 1.0f));
+	textures2.push_back(vec2(0.0f, 1.0f));
+
+	// Cara lateral izquierda
+	positions2.push_back(vec3(-3.0f*scaleX, -3.0f*scaleY, -3.0f*scaleZ));
+	positions2.push_back(vec3(-3.0f*scaleX, -3.0f*scaleY, 3.0f*scaleZ));
+	positions2.push_back(vec3(-3.0f*scaleX, 3.0f*scaleY, 3.0f*scaleZ));
+	positions2.push_back(vec3(-3.0f*scaleX, 3.0f*scaleY, -3.0f*scaleZ));
+	normals2.push_back(vec3(-1.0f, 0.0f, 0.0f));
+	normals2.push_back(vec3(-1.0f, 0.0f, 0.0f));
+	normals2.push_back(vec3(-1.0f, 0.0f, 0.0f));
+	normals2.push_back(vec3(-1.0f, 0.0f, 0.0f));
+	textures2.push_back(vec2(0.0f, 0.0f));
+	textures2.push_back(vec2(1.0f, 0.0f));
+	textures2.push_back(vec2(1.0f, 1.0f));
+	textures2.push_back(vec2(0.0f, 1.0f));
+
+	// Cara superior
+	positions2.push_back(vec3(3.0f*scaleX, 3.0f*scaleY, 3.0f*scaleZ));
+	positions2.push_back(vec3(-3.0f*scaleX, 3.0f*scaleY, 3.0f*scaleZ));
+	positions2.push_back(vec3(-3.0f*scaleX, 3.0f*scaleY, -3.0f*scaleZ));
+	positions2.push_back(vec3(3.0f*scaleX, 3.0f*scaleY, -3.0f*scaleZ));
+	normals2.push_back(vec3(0.0f, 1.0f, 0.0f));
+	normals2.push_back(vec3(0.0f, 1.0f, 0.0f));
+	normals2.push_back(vec3(0.0f, 1.0f, 0.0f));
+	normals2.push_back(vec3(0.0f, 1.0f, 0.0f));
+	textures2.push_back(vec2(0.0f, 0.0f));
+	textures2.push_back(vec2(1.0f, 0.0f));
+	textures2.push_back(vec2(1.0f, 1.0f));
+	textures2.push_back(vec2(0.0f, 1.0f));
+
+	// Cara inferior
+	positions2.push_back(vec3(-3.0f*scaleX, -3.0f*scaleY, -3.0f*scaleZ));
+	positions2.push_back(vec3(3.0f*scaleX, -3.0f*scaleY, -3.0f*scaleZ));
+	positions2.push_back(vec3(3.0f*scaleX, -3.0f*scaleY, 3.0f*scaleZ));
+	positions2.push_back(vec3(-3.0f*scaleX, -3.0f*scaleY, 3.0f*scaleZ));
+	normals2.push_back(vec3(0.0f, -1.0f, 0.0f));
+	normals2.push_back(vec3(0.0f, -1.0f, 0.0f));
+	normals2.push_back(vec3(0.0f, -1.0f, 0.0f));
+	normals2.push_back(vec3(0.0f, -1.0f, 0.0f));
+	textures2.push_back(vec2(0.0f, 0.0f));
+	textures2.push_back(vec2(1.0f, 0.0f));
+	textures2.push_back(vec2(1.0f, 1.0f));
+	textures2.push_back(vec2(0.0f, 1.0f));
+
+
+	meshFingers->CreateMesh(positions2.size());
+	meshFingers->SetPositionAttribute(positions2, GL_STATIC_DRAW, 0);
+	meshFingers->SetColorAttribute(colors2, GL_STATIC_DRAW, 1);
+	meshFingers->SetNormalAttribute(normals2, GL_STATIC_DRAW, 2);
+	meshFingers->SetTexCoordAttribute(textures2, GL_STATIC_DRAW, 3);
+	meshFingers->SetIndices(indices, GL_STATIC_DRAW);
+
+	/*
 	// Queremos gengerar 1 manager
 	glGenVertexArrays(1, &vao);
 	// Utilizar el vao
@@ -245,7 +377,7 @@ void Initialise() {
 
 	// Hacer la cámara hacia el observador para una mejor vista
 	camara1->MoveForward(30.0f);
-	camara1->MoveUp(6.0);
+	camara1->MoveUp(12.0);
 	camara1->Pitch(-30);
 
 	// Creación y activación del primer shader program (Solo 1 sombra)
@@ -306,14 +438,39 @@ void Initialise() {
 	// para que los rayos sean infinitamente lejos y con el mismo ángulo (?)
 	camara2->SetPosition(lightPosition.x, lightPosition.y, lightPosition.z);
 	camara2->SetOrthographic(30.0, 1.0);
-	camara2->Pitch(-45);	
+	camara2->Pitch(-45);
+
+	// Escala y rotación de la palma
+	//geometria1->SetScale(1.5f, 1.5f, 0.2f);
+	geometria1->Rotate(-60.0f, 0.0f, 0.0f, false);
 	
-	// Acomodo de la geometría2 (piso)
-	geometria2->SetScale(8.0f, 0.2f, 6.0f);
-	geometria2->MoveUp(-7.0f, true);
-	geometria2->MoveForward(0.0f, true);
-	geometria2->Rotate(0, 0, 0, true);
-	
+	// Acomodo de la geometría2 (piso) ¡NO QUEDA! D:
+	geometria2->SetScale(6.0f, 0.2f, 40.0f);
+	geometria2->MoveUp(-14.0f, true);
+	geometria2->MoveForward(-10.0f, true);
+	geometria2->Rotate(20, 0, 0, true);
+
+	geometria3->MoveRight(-3.0f, true);
+	geometria3->MoveUp(7.0f, true);
+
+	geometria4->MoveRight(0.0f, true);
+	geometria4->MoveUp(7.0f, true);
+
+	geometria5->MoveRight(3.0f, true);
+	geometria5->MoveUp(7.0f, true);
+
+	geometria6->MoveRight(7.0f, true);
+	geometria6->MoveUp(-1.0f, true);
+	geometria6->Rotate(0, 0, -85, false);
+
+	geometria7->MoveUp(4.5f, true);
+
+	geometria8->MoveUp(4.5f, true);
+
+	geometria9->MoveUp(4.5f, true);
+
+	geometria10->MoveUp(4.5f, true);
+
 	/*
 	// Regresa el identificador de este manager
 	// Creamos el identificador para el manager de los shaders
@@ -332,10 +489,53 @@ void Initialise() {
 
 void GameLoop() {
 	// Siempre hacerlo al inicio del frame!
+	geometria1->Rotate(0.0f, 0.01f, 0.01f, false);
+
+	if (inc >= 90.0f || inc < 0.0f) {
+		deltaMovimiento *= -1.0f;
+	}
+	inc += deltaMovimiento;
+
+	if (inc2 >= 90.0f || inc2 < 0.0f) {
+		deltaMovimiento2 *= -1.0f;
+	}
+	inc2 += deltaMovimiento2;
+
+	if (inc3 >= 90.0f || inc3 < 0.0f) {
+		deltaMovimiento3 *= -1.0f;
+	}
+	inc3 += deltaMovimiento3;
+
+	geometria3->Rotate(deltaMovimiento, 0, 0, false);
+	geometria3->MoveForward(deltaMovimiento / 30 + sin(radians(deltaMovimiento)) , false);
+
+	geometria4->Rotate(deltaMovimiento2, 0, 0, false);
+	geometria4->MoveForward(deltaMovimiento2 / 30 + sin(radians(deltaMovimiento2)), false);
+
+	geometria5->Rotate(deltaMovimiento3, 0, 0, false);
+	geometria5->MoveForward(deltaMovimiento3 / 30 + sin(radians(deltaMovimiento3)), false);
+
+	geometria6->Rotate(deltaMovimiento3, 0, 0, false);
+	geometria6->MoveForward(deltaMovimiento3 / 30 + sin(radians(deltaMovimiento3)), false);
+
+	geometria7->Rotate(deltaMovimiento, 0, 0, false);
+	geometria7->MoveForward(deltaMovimiento / 30 + sin(radians(deltaMovimiento)), false);
+
+	geometria8->Rotate(deltaMovimiento2, 0, 0, false);
+	geometria8->MoveForward(deltaMovimiento2 / 30 + sin(radians(deltaMovimiento2)), false);
+
+	geometria9->Rotate(deltaMovimiento3, 0, 0, false);
+	geometria9->MoveForward(deltaMovimiento3 / 30 + sin(radians(deltaMovimiento3)), false);
+
+	geometria10->Rotate(deltaMovimiento3, 0, 0, false);
+	geometria10->MoveForward(deltaMovimiento3 / 30 + sin(radians(deltaMovimiento3)), false);
 	
 
-	geometria1->Rotate(0.04f, 0.04f, 0.04f, false);
+	deltaMovimiento += 0.000008f;
+	deltaMovimiento2 += 0.000009f;
+	deltaMovimiento3 += 0.00001f;
 
+	
 	// ---------------------------------- 1er Render ----------------------------------
 
 	myFramebuffer->Bind();
@@ -345,17 +545,48 @@ void GameLoop() {
 
 	// Geometría 1
 	shaderProgram3->SetUniformMatrix("mvpMatrix", camara2->GetViewProjection()*geometria1->GetModelMatrix());
-	mesh->Draw(GL_TRIANGLES);
+	meshPalma->Draw(GL_TRIANGLES);
 
 	// Geometría 2
 	shaderProgram3->SetUniformMatrix("mvpMatrix", camara2->GetViewProjection()*geometria2->GetModelMatrix());
-	mesh->Draw(GL_TRIANGLES);
+	meshPalma->Draw(GL_TRIANGLES);
+
+	// Geometría 3
+	shaderProgram3->SetUniformMatrix("mvpMatrix", camara2->GetViewProjection()*geometria1->GetModelMatrix()*geometria3->GetModelMatrix());
+	meshFingers->Draw(GL_TRIANGLES);
+
+	// Geometría 4
+	shaderProgram3->SetUniformMatrix("mvpMatrix", camara2->GetViewProjection()*geometria1->GetModelMatrix()*geometria4->GetModelMatrix());
+	meshFingers->Draw(GL_TRIANGLES);
+
+	// Geometría 5
+	shaderProgram3->SetUniformMatrix("mvpMatrix", camara2->GetViewProjection()*geometria1->GetModelMatrix()*geometria5->GetModelMatrix());
+	meshFingers->Draw(GL_TRIANGLES);
+
+	// Geometría 6
+	shaderProgram3->SetUniformMatrix("mvpMatrix", camara2->GetViewProjection()*geometria1->GetModelMatrix()*geometria6->GetModelMatrix());
+	meshFingers->Draw(GL_TRIANGLES);
+
+	// Geometría 7
+	shaderProgram3->SetUniformMatrix("mvpMatrix", camara2->GetViewProjection()*geometria1->GetModelMatrix()*geometria3->GetModelMatrix()*geometria7->GetModelMatrix());
+	meshFingers->Draw(GL_TRIANGLES);
 	
+	// Geometría 8
+	shaderProgram3->SetUniformMatrix("mvpMatrix", camara2->GetViewProjection()*geometria1->GetModelMatrix()*geometria3->GetModelMatrix()*geometria8->GetModelMatrix());
+	meshFingers->Draw(GL_TRIANGLES);
+
+	// Geometría 9
+	shaderProgram3->SetUniformMatrix("mvpMatrix", camara2->GetViewProjection()*geometria1->GetModelMatrix()*geometria3->GetModelMatrix()*geometria9->GetModelMatrix());
+	meshFingers->Draw(GL_TRIANGLES);
+
+	// Geometría 10
+	shaderProgram3->SetUniformMatrix("mvpMatrix", camara2->GetViewProjection()*geometria1->GetModelMatrix()*geometria6->GetModelMatrix()*geometria10->GetModelMatrix());
+	meshFingers->Draw(GL_TRIANGLES);
+
 	shaderProgram3->Deactivate();
 
 	myFramebuffer->Unbind();
-	glViewport(0, 0, 400, 400);
-	//glViewport(0, 0, glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
+	ReshapeWindow(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 
 	// ---------------------------------- 2do Render ----------------------------------
 	
@@ -375,7 +606,71 @@ void GameLoop() {
 	shaderProgram2->SetUniformMatrix("ModelMatrix", modelMatrix);
 	shaderProgram2->SetUniformMatrix("NormalMatrix", normalMatrix);
 	shaderProgram2->SetUniformMatrix("LightVPMatrix", camara2->GetViewProjection());
-	mesh->Draw(GL_TRIANGLES);
+	meshPalma->Draw(GL_TRIANGLES);
+
+	modelMatrix = geometria1->GetModelMatrix()*geometria3->GetModelMatrix();
+	normalMatrix = transpose(inverse(mat3(geometria1->GetModelMatrix()*geometria3->GetModelMatrix())));
+	shaderProgram2->SetUniformMatrix("mvpMatrix", camara1->GetViewProjection()*geometria1->GetModelMatrix()*geometria3->GetModelMatrix());
+	shaderProgram2->SetUniformMatrix("ModelMatrix", modelMatrix);
+	shaderProgram2->SetUniformMatrix("NormalMatrix", normalMatrix);
+	shaderProgram2->SetUniformMatrix("LightVPMatrix", camara2->GetViewProjection());
+	meshFingers->Draw(GL_TRIANGLES);
+
+	modelMatrix = geometria1->GetModelMatrix()*geometria4->GetModelMatrix();
+	normalMatrix = transpose(inverse(mat3(geometria1->GetModelMatrix()*geometria4->GetModelMatrix())));
+	shaderProgram2->SetUniformMatrix("mvpMatrix", camara1->GetViewProjection()*geometria1->GetModelMatrix()*geometria4->GetModelMatrix());
+	shaderProgram2->SetUniformMatrix("ModelMatrix", modelMatrix);
+	shaderProgram2->SetUniformMatrix("NormalMatrix", normalMatrix);
+	shaderProgram2->SetUniformMatrix("LightVPMatrix", camara2->GetViewProjection());
+	meshFingers->Draw(GL_TRIANGLES);
+
+	modelMatrix = geometria1->GetModelMatrix()*geometria5->GetModelMatrix();
+	normalMatrix = transpose(inverse(mat3(geometria1->GetModelMatrix()*geometria5->GetModelMatrix())));
+	shaderProgram2->SetUniformMatrix("mvpMatrix", camara1->GetViewProjection()*geometria1->GetModelMatrix()*geometria5->GetModelMatrix());
+	shaderProgram2->SetUniformMatrix("ModelMatrix", modelMatrix);
+	shaderProgram2->SetUniformMatrix("NormalMatrix", normalMatrix);
+	shaderProgram2->SetUniformMatrix("LightVPMatrix", camara2->GetViewProjection());
+	meshFingers->Draw(GL_TRIANGLES);
+
+	modelMatrix = geometria1->GetModelMatrix()*geometria6->GetModelMatrix();
+	normalMatrix = transpose(inverse(mat3(geometria1->GetModelMatrix()*geometria6->GetModelMatrix())));
+	shaderProgram2->SetUniformMatrix("mvpMatrix", camara1->GetViewProjection()*geometria1->GetModelMatrix()*geometria6->GetModelMatrix());
+	shaderProgram2->SetUniformMatrix("ModelMatrix", modelMatrix);
+	shaderProgram2->SetUniformMatrix("NormalMatrix", normalMatrix);
+	shaderProgram2->SetUniformMatrix("LightVPMatrix", camara2->GetViewProjection());
+	meshFingers->Draw(GL_TRIANGLES);
+
+	modelMatrix = geometria1->GetModelMatrix()*geometria3->GetModelMatrix()*geometria7->GetModelMatrix();
+	normalMatrix = transpose(inverse(mat3(geometria1->GetModelMatrix()*geometria3->GetModelMatrix()*geometria7->GetModelMatrix())));
+	shaderProgram2->SetUniformMatrix("mvpMatrix", camara1->GetViewProjection()*geometria1->GetModelMatrix()*geometria3->GetModelMatrix()*geometria7->GetModelMatrix());
+	shaderProgram2->SetUniformMatrix("ModelMatrix", modelMatrix);
+	shaderProgram2->SetUniformMatrix("NormalMatrix", normalMatrix);
+	shaderProgram2->SetUniformMatrix("LightVPMatrix", camara2->GetViewProjection());
+	meshFingers->Draw(GL_TRIANGLES);
+
+	modelMatrix = geometria1->GetModelMatrix()*geometria4->GetModelMatrix()*geometria8->GetModelMatrix();
+	normalMatrix = transpose(inverse(mat3(geometria1->GetModelMatrix()*geometria4->GetModelMatrix()*geometria8->GetModelMatrix())));
+	shaderProgram2->SetUniformMatrix("mvpMatrix", camara1->GetViewProjection()*geometria1->GetModelMatrix()*geometria4->GetModelMatrix()*geometria8->GetModelMatrix());
+	shaderProgram2->SetUniformMatrix("ModelMatrix", modelMatrix);
+	shaderProgram2->SetUniformMatrix("NormalMatrix", normalMatrix);
+	shaderProgram2->SetUniformMatrix("LightVPMatrix", camara2->GetViewProjection());
+	meshFingers->Draw(GL_TRIANGLES);
+
+	modelMatrix = geometria1->GetModelMatrix()*geometria5->GetModelMatrix()*geometria9->GetModelMatrix();
+	normalMatrix = transpose(inverse(mat3(geometria1->GetModelMatrix()*geometria5->GetModelMatrix()*geometria9->GetModelMatrix())));
+	shaderProgram2->SetUniformMatrix("mvpMatrix", camara1->GetViewProjection()*geometria1->GetModelMatrix()*geometria5->GetModelMatrix()*geometria9->GetModelMatrix());
+	shaderProgram2->SetUniformMatrix("ModelMatrix", modelMatrix);
+	shaderProgram2->SetUniformMatrix("NormalMatrix", normalMatrix);
+	shaderProgram2->SetUniformMatrix("LightVPMatrix", camara2->GetViewProjection());
+	meshFingers->Draw(GL_TRIANGLES);
+
+	modelMatrix = geometria1->GetModelMatrix()*geometria6->GetModelMatrix()*geometria10->GetModelMatrix();
+	normalMatrix = transpose(inverse(mat3(geometria1->GetModelMatrix()*geometria6->GetModelMatrix()*geometria10->GetModelMatrix())));
+	shaderProgram2->SetUniformMatrix("mvpMatrix", camara1->GetViewProjection()*geometria1->GetModelMatrix()*geometria6->GetModelMatrix()*geometria10->GetModelMatrix());
+	shaderProgram2->SetUniformMatrix("ModelMatrix", modelMatrix);
+	shaderProgram2->SetUniformMatrix("NormalMatrix", normalMatrix);
+	shaderProgram2->SetUniformMatrix("LightVPMatrix", camara2->GetViewProjection());
+	meshFingers->Draw(GL_TRIANGLES);
 	
 	glActiveTexture(GL_TEXTURE0);
 	myTexture1.Unbind();
@@ -400,7 +695,7 @@ void GameLoop() {
 	shaderProgram1->SetUniformMatrix("ModelMatrix", modelMatrix);
 	shaderProgram1->SetUniformMatrix("NormalMatrix", normalMatrix);
 	shaderProgram1->SetUniformMatrix("LightVPMatrix", camara2->GetViewProjection());
-	mesh->Draw(GL_TRIANGLES);
+	meshPalma->Draw(GL_TRIANGLES);
 
 	glActiveTexture(GL_TEXTURE0);
 	myTexture3.Unbind();
@@ -430,7 +725,7 @@ void GameLoop() {
 	glutSwapBuffers();
 
 	// Cambiando la tonalidad del fondo
-	colour += 0.01f;
+	colour += 0.1;
 	glClearColor(0.5 + 0.5*cos(radians(colour)), 0.5 + 0.5*sin(radians(colour)), sin(radians(colour))*cos(radians(colour)), 1.0f);
 }
 
@@ -463,11 +758,7 @@ void Idle() {
 	glutPostRedisplay();
 }
 
-void ReshapeWindow(int width, int height) {
-	// Para configurar un uniform, tenemos que decirle a OpenGL que vamos a utilizar el shader program (manager)
-	glViewport(0, 0, width, height);
-	//shProgram.SetUniform("Resolution", width, height);
-}
+
 
 int main(int argc, char* argv[]) {
 	// Inicializar freeglut
@@ -490,7 +781,7 @@ int main(int argc, char* argv[]) {
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE); // Dos framebuffers
 
 	// Iniciar las dimensiones de la ventana (en pixeles)
-	glutInitWindowSize(400, 400);
+	glutInitWindowSize(800, 800);
 
 	// Creeamos la ventana y le damos un título.
 	glutCreateWindow("Título Súper Cool GL");
