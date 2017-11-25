@@ -1,7 +1,8 @@
 /*********************************************************
 Materia: Gráficas Computacionales
-Fecha: 16 de septiembre del 2017
+Fecha: 24 de noviembre del 2017
 Autor: A01169073 Aldo A. Reyna Gómez
+	   A01373890 Gabriela Aguilar Lugo
 *********************************************************/
 
 #include <IL/il.h>
@@ -437,7 +438,7 @@ void Initialise() {
 	// Se acomoda la segunda cámara en la posición de la luz y debe ser ortográfica
 	// para que los rayos sean infinitamente lejos y con el mismo ángulo (?)
 	camara2->SetPosition(lightPosition.x, lightPosition.y, lightPosition.z);
-	camara2->SetOrthographic(30.0, 1.0);
+	camara2->SetOrthographic(50.0, 1.0);
 	camara2->Pitch(-45);
 
 	// Escala y rotación de la palma
@@ -445,7 +446,7 @@ void Initialise() {
 	geometria1->Rotate(-60.0f, 0.0f, 0.0f, false);
 	
 	// Acomodo de la geometría2 (piso) ¡NO QUEDA! D:
-	geometria2->SetScale(6.0f, 0.2f, 40.0f);
+	geometria2->SetScale(6.0f, 0.2f, 60.0f);
 	geometria2->MoveUp(-14.0f, true);
 	geometria2->MoveForward(-10.0f, true);
 	geometria2->Rotate(20, 0, 0, true);
